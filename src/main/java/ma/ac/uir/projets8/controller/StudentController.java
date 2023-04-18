@@ -54,7 +54,8 @@ public class StudentController {
             String lastName,
             String firstName,
             String email,
-            String password
+            String password,
+            String role
     ) {
     }
 

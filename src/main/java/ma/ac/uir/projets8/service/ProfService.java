@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 import static ma.ac.uir.projets8.model.enums.Role.ADMIN;
+import static ma.ac.uir.projets8.model.enums.Role.PROF;
 
 @RequiredArgsConstructor
 @Service
@@ -28,7 +29,7 @@ public class ProfService {
         prof.setFirstName(request.firstName());
         prof.setEmail(request.email());
         prof.setPassword(request.password());
-        prof.setRoles(List.of(ADMIN));
+        prof.setRoles(List.of(PROF));
         profRepository.save(prof);
     }
 
