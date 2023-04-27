@@ -37,7 +37,7 @@ public class Meeting {
     @JoinColumn(name = "id_organiser",nullable = false)
     private Account organiser;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "participant",
             joinColumns =@JoinColumn(name = "id_meeting"),

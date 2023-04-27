@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,6 +39,10 @@ public class Account implements UserDetails {
     @JsonIgnore
     private String password;
     private List<Role> roles;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "organiser")
+    private Set<Meeting> orgonisedMeetings;
 
     @JsonIgnore
     @Override
