@@ -1,7 +1,6 @@
 package ma.ac.uir.projets8.controller;
 
 import lombok.RequiredArgsConstructor;
-import ma.ac.uir.projets8.exception.CompteNotFoundException;
 import ma.ac.uir.projets8.model.Prof;
 import ma.ac.uir.projets8.repository.ProfRepository;
 import ma.ac.uir.projets8.service.ProfService;
@@ -9,8 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import static ma.ac.uir.projets8.model.enums.Role.ADMIN;
 
 @RestController
 @RequiredArgsConstructor
