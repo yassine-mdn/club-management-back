@@ -7,6 +7,8 @@ import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Admin;
 import ma.ac.uir.projets8.model.Meeting;
 import ma.ac.uir.projets8.repository.AdminRepository;
+import ma.ac.uir.projets8.util.NullChecker;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,11 +28,16 @@ public class AdminService {
 
     private final AdminRepository adminRepository;
 
-    public List<Admin> getAllAdmins() {
-        return adminRepository.findAll();
+    public ResponseEntity<List<Admin>> getAllAdmins() {
+        return ResponseEntity.ok(adminRepository.findAll());
     }
 
-    public void addAdmin(@RequestBody NewAdminRequest request) {
+    public ResponseEntity<String> addAdmin(@RequestBody NewAdminRequest request) {
+
+        if (NullChecker.hasNull(request))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"invalid request");
+        if (adminRepository.existsByEmail(request.email()))
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,"Email already exists");
         Admin admin = new Admin();
         admin.setLastName(request.lastName());
         admin.setFirstName(request.firstName());
@@ -37,13 +45,20 @@ public class AdminService {
         admin.setPassword(request.password());
         admin.setRoles(List.of(ADMIN));
         adminRepository.save(admin);
+        return new ResponseEntity<>("Admin account successfully created", HttpStatus.CREATED);
     }
 
-    public Admin getAdminById(Integer id) {
-        return adminRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+    public ResponseEntity<Admin> getAdminById(Integer id) {
+        try {
+            Admin admin = adminRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+            return ResponseEntity.ok(adminRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id)));
+        }catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"invalid id");
+        }
+
     }
 
-    public void updateAdmin(Integer id, NewAdminRequest request) {
+    public ResponseEntity<String> updateAdmin(Integer id, NewAdminRequest request) {
         adminRepository.findById(id)
                 .map(admin -> {
                             if (!request.firstName().isEmpty())
@@ -56,19 +71,24 @@ public class AdminService {
                                 admin.setPassword(request.password());
                             return adminRepository.save(admin);
                         }
-                );
-        //TODO:Add case of recieving an invalid id
+                ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage()));
+        return new ResponseEntity<>("Admin account successfully updated", HttpStatus.ACCEPTED);
     }
 
-    public void deleteAdmin(Integer id) {
+    public ResponseEntity<String> deleteAdmin(Integer id) {
+        try {
 
-        adminRepository.deleteById(id);
+            adminRepository.deleteById(id);
+            return ResponseEntity.ok("deleted successfully");
+        }  catch (IllegalArgumentException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage());
+        }
     }
 
     public ResponseEntity<List<Admin>> getAdminsPage(int pageNumber, int size) {
         Page<Admin> resultPage = adminRepository.findAll(PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
-            throw new PageOutOfBoundsException(pageNumber);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,new PageOutOfBoundsException(pageNumber).getMessage());
         }
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
