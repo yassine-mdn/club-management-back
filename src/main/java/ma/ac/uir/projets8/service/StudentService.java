@@ -3,9 +3,15 @@ package ma.ac.uir.projets8.service;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.StudentController;
 import ma.ac.uir.projets8.exception.AccountNotFoundException;
+import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.model.enums.Role;
 import ma.ac.uir.projets8.repository.StudentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -57,6 +63,16 @@ public class StudentService {
                         }
                 );
         //TODO:Add case of recieving an invalid id
+    }
+
+    public ResponseEntity<List<Student>> getStudentsPage(int pageNumber, int size){
+        Page<Student> resultPage = studentRepository.findAll(PageRequest.of(pageNumber, size));
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new PageOutOfBoundsException(pageNumber);
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     public void deleteStudent(Integer id) {

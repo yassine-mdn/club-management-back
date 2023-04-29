@@ -1,9 +1,13 @@
 package ma.ac.uir.projets8.controller;
 
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.repository.StudentRepository;
 import ma.ac.uir.projets8.service.StudentService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +50,16 @@ public class StudentController {
     public void deleteStudent(@PathVariable("student_id") Integer id){
         studentService.deleteStudent(id);
     }
+
+    @GetMapping("/page={pageNumber}/size={size}")
+    @ApiResponse(headers = {@Header(name = "total-pages",description = "the total number of pages",schema = @Schema(type = "string"))})
+    public ResponseEntity<List<Student>> getStudentsPageable(
+            @PathVariable Integer pageNumber,
+            @PathVariable Integer size
+    ) {
+        return studentService.getStudentsPage(pageNumber, size);
+    }
+
 
     public record NewStudentRequest(
             String lastName,

@@ -1,5 +1,8 @@
 package ma.ac.uir.projets8.controller;
 
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Account;
 import ma.ac.uir.projets8.model.Meeting;
@@ -54,6 +57,15 @@ public class MeetingController {
     @DeleteMapping("{meeting_id}")
     public void deleteMeeting(@PathVariable("meeting_id") Integer id){
         meetingService.deleteMeeting(id);
+    }
+
+    @GetMapping("/page={pageNumber}/size={size}")
+    @ApiResponse(headers = {@Header(name = "total-pages",description = "the total number of pages",schema = @Schema(type = "string"))})
+    public ResponseEntity<List<Meeting>> getMeetingsPageable(
+            @PathVariable Integer pageNumber,
+            @PathVariable Integer size
+    ) {
+        return meetingService.getMeetingsPage(pageNumber, size);
     }
 
     public record NewMeetingRequest(
