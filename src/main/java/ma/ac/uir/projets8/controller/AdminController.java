@@ -65,8 +65,8 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
     @PutMapping("{admin_id}")
-    public void updateAdmin(@PathVariable("admin_id") Integer id, @RequestBody NewAdminRequest request) {
-        adminService.updateAdmin(id, request);
+    public ResponseEntity<String> updateAdmin(@PathVariable("admin_id") Integer id, @RequestBody NewAdminRequest request) {
+        return adminService.updateAdmin(id, request);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")

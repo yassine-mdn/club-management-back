@@ -35,9 +35,9 @@ public class AdminService {
     public ResponseEntity<String> addAdmin(@RequestBody NewAdminRequest request) {
 
         if (NullChecker.hasNull(request))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"invalid request");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
         if (adminRepository.existsByEmail(request.email()))
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,"Email already exists");
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Email already exists");
         Admin admin = new Admin();
         admin.setLastName(request.lastName());
         admin.setFirstName(request.firstName());
@@ -50,10 +50,9 @@ public class AdminService {
 
     public ResponseEntity<Admin> getAdminById(Integer id) {
         try {
-            Admin admin = adminRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
             return ResponseEntity.ok(adminRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id)));
-        }catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"invalid id");
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
 
     }
@@ -72,7 +71,7 @@ public class AdminService {
                             return adminRepository.save(admin);
                         }
                 ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage()));
-        return new ResponseEntity<>("Admin account successfully updated", HttpStatus.ACCEPTED);
+        return new ResponseEntity<>("Admin account with " + id + " successfully updated", HttpStatus.ACCEPTED);
     }
 
     public ResponseEntity<String> deleteAdmin(Integer id) {
@@ -80,7 +79,7 @@ public class AdminService {
 
             adminRepository.deleteById(id);
             return ResponseEntity.ok("deleted successfully");
-        }  catch (IllegalArgumentException e){
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage());
         }
     }
@@ -88,7 +87,7 @@ public class AdminService {
     public ResponseEntity<List<Admin>> getAdminsPage(int pageNumber, int size) {
         Page<Admin> resultPage = adminRepository.findAll(PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,new PageOutOfBoundsException(pageNumber).getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
