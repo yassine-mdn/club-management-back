@@ -65,7 +65,7 @@ public class StudentService {
         //TODO:Add case of recieving an invalid id
     }
 
-    public ResponseEntity<List<Student>> getStudentPage(int pageNumber, int size){
+    public ResponseEntity<List<Student>> getStudentsPage(int pageNumber, int size){
         Page<Student> resultPage = studentRepository.findAll(PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new PageOutOfBoundsException(pageNumber);

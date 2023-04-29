@@ -1,7 +1,11 @@
 package ma.ac.uir.projets8.controller;
 
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Admin;
+import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.repository.AdminRepository;
 import ma.ac.uir.projets8.service.AdminService;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +49,15 @@ public class AdminController {
     @DeleteMapping("{admin_id}")
     public void deleteAdmin(@PathVariable("admin_id") Integer id){
         adminService.deleteAdmin(id);
+    }
+
+    @GetMapping("/page={pageNumber}/size={size}")
+    @ApiResponse(headers = {@Header(name = "total-pages",description = "the total number of pages",schema = @Schema(type = "string"))})
+    public ResponseEntity<List<Admin>> getAdminsPageable(
+            @PathVariable Integer pageNumber,
+            @PathVariable Integer size
+    ) {
+        return adminService.getAdminsPage(pageNumber, size);
     }
 
     public record NewAdminRequest(

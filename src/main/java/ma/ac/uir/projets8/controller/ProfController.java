@@ -1,7 +1,11 @@
 package ma.ac.uir.projets8.controller;
 
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Prof;
+import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.repository.ProfRepository;
 import ma.ac.uir.projets8.service.ProfService;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +49,15 @@ public class ProfController {
     @DeleteMapping("{prof_id}")
     public void deleteProf(@PathVariable("prof_id") Integer id){
         profService.deleteProf(id);
+    }
+
+    @GetMapping("/page={pageNumber}/size={size}")
+    @ApiResponse(headers = {@Header(name = "total-pages",description = "the total number of pages",schema = @Schema(type = "string"))})
+    public ResponseEntity<List<Prof>> getProfsPageable(
+            @PathVariable Integer pageNumber,
+            @PathVariable Integer size
+    ) {
+        return profService.getProfsPage(pageNumber, size);
     }
 
     public record NewProfRequest(

@@ -53,11 +53,11 @@ public class StudentController {
 
     @GetMapping("/page={pageNumber}/size={size}")
     @ApiResponse(headers = {@Header(name = "total-pages",description = "the total number of pages",schema = @Schema(type = "string"))})
-    public ResponseEntity<List<Student>> getStudentPageable(
+    public ResponseEntity<List<Student>> getStudentsPageable(
             @PathVariable Integer pageNumber,
             @PathVariable Integer size
     ) {
-        return studentService.getStudentPage(pageNumber, size);
+        return studentService.getStudentsPage(pageNumber, size);
     }
 
 

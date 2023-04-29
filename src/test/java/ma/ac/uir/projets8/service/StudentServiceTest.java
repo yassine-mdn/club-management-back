@@ -46,7 +46,7 @@ class StudentServiceTest {
     }
     @Test
     void getStudentPage() {
-        List<Student> students = studentService.getStudentPage(0, 1).getBody();
+        List<Student> students = studentService.getStudentsPage(0, 1).getBody();
         assertEquals(1, students.size());
     }
 }
