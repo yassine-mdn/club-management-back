@@ -2,13 +2,10 @@ package ma.ac.uir.projets8.service;
 
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.AdminController.*;
-import ma.ac.uir.projets8.exception.CompteNotFoundException;
+import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.model.Admin;
 import ma.ac.uir.projets8.repository.AdminRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -36,7 +33,7 @@ public class AdminService {
     }
 
     public Admin getAdminById(Integer id){
-        return adminRepository.findById(id).orElseThrow(() -> new CompteNotFoundException(id));
+        return adminRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
     }
 
     public void updateAdmin(Integer id, NewAdminRequest request) {

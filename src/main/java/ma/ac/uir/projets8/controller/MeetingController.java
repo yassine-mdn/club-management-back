@@ -1,0 +1,68 @@
+package ma.ac.uir.projets8.controller;
+
+import lombok.RequiredArgsConstructor;
+import ma.ac.uir.projets8.model.Account;
+import ma.ac.uir.projets8.model.Meeting;
+import ma.ac.uir.projets8.model.Student;
+import ma.ac.uir.projets8.repository.MeetingRepository;
+import ma.ac.uir.projets8.service.MeetingService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/meetings")
+public class MeetingController {
+
+    private final MeetingRepository meetingRepository;
+    private final MeetingService meetingService;
+
+
+    @PostMapping
+    public void addMeeting(@RequestBody NewMeetingRequest request) {
+        meetingService.addMeeting(request);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Meeting>> getAllMeetings() {
+        return ResponseEntity.ok(meetingService.getAllMeetings());
+    }
+
+    @GetMapping("{meeting_id}")
+    public ResponseEntity<Meeting> getMeetingById(@PathVariable("meeting_id") Integer id){
+        return ResponseEntity.ok(meetingService.getMeetingById(id));
+    }
+
+    @GetMapping("{meeting_id}/organiser")
+    public ResponseEntity<Account> getOrganiserByMeetingId(@PathVariable("meeting_id") Integer id){
+        return ResponseEntity.ok(meetingService.getMeetingOrganiser(id));
+    }
+
+    @GetMapping("{meeting_id}/participants")
+    public ResponseEntity<List<Student>> getParticipantsByMeetingId(@PathVariable("meeting_id") Integer id){
+        return ResponseEntity.ok(meetingService.getMeetingParticipants(id));
+    }
+
+    @PutMapping("{meeting_id}")
+    public void updateMeeting(@PathVariable("meeting_id") Integer id, @RequestBody NewMeetingRequest request) {
+        meetingService.updateMeeting(id,request);
+    }
+
+    @DeleteMapping("{meeting_id}")
+    public void deleteMeeting(@PathVariable("meeting_id") Integer id){
+        meetingService.deleteMeeting(id);
+    }
+
+    public record NewMeetingRequest(
+            String title,
+            Date date,
+            String description,
+            Integer lengthInMinutes,
+            Integer organiserId,
+            List<Integer> participantsIds
+    ) {
+    }
+}

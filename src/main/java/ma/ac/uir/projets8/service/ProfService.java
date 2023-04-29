@@ -2,7 +2,7 @@ package ma.ac.uir.projets8.service;
 
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.ProfController;
-import ma.ac.uir.projets8.exception.CompteNotFoundException;
+import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.model.Prof;
 import ma.ac.uir.projets8.repository.ProfRepository;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-import static ma.ac.uir.projets8.model.enums.Role.ADMIN;
 import static ma.ac.uir.projets8.model.enums.Role.PROF;
 
 @RequiredArgsConstructor
@@ -34,7 +33,7 @@ public class ProfService {
     }
 
     public Prof getProfById(Integer id){
-        return profRepository.findById(id).orElseThrow(() -> new CompteNotFoundException(id));
+        return profRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
     }
 
     public void updateProf(Integer id, ProfController.NewProfRequest request) {

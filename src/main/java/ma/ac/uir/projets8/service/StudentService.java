@@ -2,7 +2,7 @@ package ma.ac.uir.projets8.service;
 
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.StudentController;
-import ma.ac.uir.projets8.exception.CompteNotFoundException;
+import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.model.enums.Role;
 import ma.ac.uir.projets8.repository.StudentRepository;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-import static ma.ac.uir.projets8.model.enums.Role.ADMIN;
 import static ma.ac.uir.projets8.model.enums.Role.STUDENT;
 
 @RequiredArgsConstructor
@@ -38,7 +37,7 @@ public class StudentService {
     }
 
     public Student getStudentById(Integer id) {
-        return studentRepository.findById(id).orElseThrow(() -> new CompteNotFoundException(id));
+        return studentRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
     }
 
     public void updateStudent(Integer id, StudentController.NewStudentRequest request) {
