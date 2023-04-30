@@ -1,8 +1,11 @@
 package ma.ac.uir.projets8.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Account;
 import ma.ac.uir.projets8.model.Meeting;
@@ -24,41 +27,93 @@ public class MeetingController {
     private final MeetingService meetingService;
 
 
+    @Operation(summary = "create a new Meeting", description = "adds a new meeting  to the database")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Meeting account successfully created"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "406", description = "Email already exists")
+    })
     @PostMapping
-    public void addMeeting(@RequestBody NewMeetingRequest request) {
-        meetingService.addMeeting(request);
+    public ResponseEntity<String> addMeeting(@RequestBody NewMeetingRequest request) {
+        
+        return meetingService.addMeeting(request);
     }
 
+    @Operation(summary = "get All Meetings", description = "returns all the meetings ", deprecated = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved")
+    })
     @GetMapping
     public ResponseEntity<List<Meeting>> getAllMeetings() {
-        return ResponseEntity.ok(meetingService.getAllMeetings());
+        
+        return meetingService.getAllMeetings();
     }
 
+    @Operation(summary = "get an meeting account by id", description = "returns an meeting per the id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
     @GetMapping("{meeting_id}")
     public ResponseEntity<Meeting> getMeetingById(@PathVariable("meeting_id") Integer id){
-        return ResponseEntity.ok(meetingService.getMeetingById(id));
+        
+        return meetingService.getMeetingById(id);
     }
 
+    @Operation(summary = "get the Organizer of the meeting", description = "returns the organizer account per the meeting id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
     @GetMapping("{meeting_id}/organiser")
     public ResponseEntity<Account> getOrganiserByMeetingId(@PathVariable("meeting_id") Integer id){
-        return ResponseEntity.ok(meetingService.getMeetingOrganiser(id));
+        
+        return meetingService.getMeetingOrganiser(id);
     }
 
+    @Operation(summary = "get the participants of the meeting", description = "returns the participants account list per the meeting id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
     @GetMapping("{meeting_id}/participants")
     public ResponseEntity<List<Student>> getParticipantsByMeetingId(@PathVariable("meeting_id") Integer id){
-        return ResponseEntity.ok(meetingService.getMeetingParticipants(id));
+        
+        return meetingService.getMeetingParticipants(id);
     }
 
+    @Operation(summary = "update an account by id", description = "updates the meeting with the specified id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully updated"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
     @PutMapping("{meeting_id}")
-    public void updateMeeting(@PathVariable("meeting_id") Integer id, @RequestBody NewMeetingRequest request) {
-        meetingService.updateMeeting(id,request);
+    public ResponseEntity<String> updateMeeting(@PathVariable("meeting_id") Integer id, @RequestBody NewMeetingRequest request) {
+       
+       return meetingService.updateMeeting(id,request);
     }
 
+    @Operation(summary = "delete an Meeting by id", description = "delete the meeting with the specified id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "meeting deleted"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
     @DeleteMapping("{meeting_id}")
-    public void deleteMeeting(@PathVariable("meeting_id") Integer id){
-        meetingService.deleteMeeting(id);
+    public ResponseEntity<String> deleteMeeting(@PathVariable("meeting_id") Integer id){
+        
+        return meetingService.deleteMeeting(id);
     }
 
+
+    @Operation(summary = "get a page of Meetings", description = "returns a specific page of meeting Meetings with the specified number of lines",deprecated = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
+    })
     @GetMapping("/page={pageNumber}/size={size}")
     @ApiResponse(headers = {@Header(name = "total-pages",description = "the total number of pages",schema = @Schema(type = "string"))})
     public ResponseEntity<List<Meeting>> getMeetingsPageable(
