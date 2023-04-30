@@ -27,6 +27,7 @@ public class ProfService {
     private final ProfRepository profRepository;
 
     public ResponseEntity<List<Prof>> getAllProfs() {
+
         return ResponseEntity.ok(profRepository.findAll());
     }
 
@@ -47,6 +48,7 @@ public class ProfService {
     }
 
     public ResponseEntity<Prof> getProfById(Integer id) {
+
         try {
             return ResponseEntity.ok(profRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id)));
         } catch (AccountNotFoundException e) {
@@ -56,6 +58,7 @@ public class ProfService {
     }
 
     public ResponseEntity<String> updateProf(Integer id, NewProfRequest request) {
+
         profRepository.findById(id)
                 .map(prof -> {
                             if (!request.firstName().isEmpty())
@@ -73,6 +76,7 @@ public class ProfService {
     }
 
     public ResponseEntity<String> deleteProf(Integer id) {
+
         try {
 
             profRepository.deleteById(id);
@@ -83,6 +87,7 @@ public class ProfService {
     }
 
     public ResponseEntity<List<Prof>> getProfsPage(int pageNumber, int size) {
+
         Page<Prof> resultPage = profRepository.findAll(PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
