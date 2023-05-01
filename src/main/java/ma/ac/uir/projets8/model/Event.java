@@ -43,6 +43,7 @@ public class Event {
     )
     private Set<Account> participants;
 
+    @Enumerated(EnumType.STRING)
     private EventStatus status;
 
     @ManyToMany
