@@ -36,7 +36,7 @@ public class Transaction {
     private Set<Document> preuve;
     @ManyToOne
     private Budget budget;
-    private Boolean isValiser;
+    private Boolean isValide;
 
 
 }
