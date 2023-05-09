@@ -29,10 +29,11 @@ public class AdminService {
     private final AdminRepository adminRepository;
 
     public ResponseEntity<List<Admin>> getAllAdmins() {
+
         return ResponseEntity.ok(adminRepository.findAll());
     }
 
-    public ResponseEntity<String> addAdmin(@RequestBody NewAdminRequest request) {
+    public ResponseEntity<String> addAdmin(NewAdminRequest request) {
 
         if (NullChecker.hasNull(request))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
@@ -85,6 +86,8 @@ public class AdminService {
     }
 
     public ResponseEntity<List<Admin>> getAdminsPage(int pageNumber, int size) {
+        if (pageNumber < 0 || size < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
         Page<Admin> resultPage = adminRepository.findAll(PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
