@@ -1,11 +1,14 @@
 package ma.ac.uir.projets8.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Document;
+import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.service.BudgetService;
 import ma.ac.uir.projets8.service.DocumentService;
 import org.springframework.http.HttpStatus;
@@ -77,6 +80,16 @@ public class BudgetController {
     public ResponseEntity<Void> deleteBudget(@PathVariable Long id) {
         budgetService.deleteBudget(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "get the list of transactions", description = "returns the associated list of transactions according to the budget with the given id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
+    @GetMapping("{budget_id}/transactions")
+    public ResponseEntity<List<Transaction>> getTransactionsByBudget(@PathVariable("budget_id") Long id){
+        return budgetService.getTransactionsByBudget(id);
     }
 }
 

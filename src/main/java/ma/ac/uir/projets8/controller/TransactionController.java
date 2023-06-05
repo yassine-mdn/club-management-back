@@ -4,6 +4,7 @@ package ma.ac.uir.projets8.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.service.TransactionService;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,8 +29,8 @@ public class TransactionController {
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @PostMapping
-    public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.createTransaction(transaction));
+    public ResponseEntity<Transaction> createTransaction(@RequestBody NewTransactionRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.createTransaction(request));
     }
 
     @Operation(summary = "Get all transactions")
@@ -56,7 +58,7 @@ public class TransactionController {
     }
 
 
-    @Operation(summary = "Update a transaction")
+    @Operation(summary = "Update a transaction", deprecated = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Transaction successfully updated"),
             @ApiResponse(responseCode = "404", description = "Transaction not found")
@@ -75,6 +77,15 @@ public class TransactionController {
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    public record NewTransactionRequest(
+        Date date,
+        double valeur,
+        Long idBudget,
+        Long idEvent
+    ) {
     }
 }
 

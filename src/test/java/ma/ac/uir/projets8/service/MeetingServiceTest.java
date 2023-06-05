@@ -1,24 +1,18 @@
 package ma.ac.uir.projets8.service;
 
 import ma.ac.uir.projets8.controller.MeetingController;
-import ma.ac.uir.projets8.model.Account;
-import ma.ac.uir.projets8.model.Admin;
+import ma.ac.uir.projets8.model.Personnel;
 import ma.ac.uir.projets8.model.Meeting;
 import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.model.enums.Role;
-import ma.ac.uir.projets8.repository.AdminRepository;
+import ma.ac.uir.projets8.repository.PersonnelRepository;
 import ma.ac.uir.projets8.repository.MeetingRepository;
 import ma.ac.uir.projets8.repository.StudentRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +25,7 @@ class MeetingServiceTest {
     @Autowired
     private MeetingService meetingService;
     @Autowired
-    private AdminRepository adminRepository;
+    private PersonnelRepository personnelRepository;
 
     @Autowired
     private StudentRepository studentRepository;
@@ -39,7 +33,7 @@ class MeetingServiceTest {
     @Autowired
     private MeetingRepository meetingRepository;
 
-    private Admin admin = new Admin();
+    private Personnel personnel = new Personnel();
 
     private Student student1 = new Student();
 
@@ -49,12 +43,12 @@ class MeetingServiceTest {
 
     @BeforeEach
     public void setUp() {
-        admin.setEmail("testAdmin@mail.com");
-        admin.setFirstName("test");
-        admin.setLastName("testAdmin");
-        admin.setPassword("test");
-        admin.setRoles(List.of(Role.ADMIN));
-        adminRepository.save(admin);
+        personnel.setEmail("testAdmin@mail.com");
+        personnel.setFirstName("test");
+        personnel.setLastName("testAdmin");
+        personnel.setPassword("test");
+        personnel.setRoles(List.of(Role.ADMIN));
+        personnelRepository.save(personnel);
 
         student1.setEmail("sudent1@mail.com");
         student1.setFirstName("test");
@@ -73,7 +67,7 @@ class MeetingServiceTest {
         testMeeting.setTitle("test");
         testMeeting.setDescription("test");
         testMeeting.setLengthInMinutes(60);
-        testMeeting.setOrganiser(admin);
+        testMeeting.setOrganiser(personnel);
         testMeeting.setParticipants(Set.of(student1, student2));
         meetingRepository.save(testMeeting);
 
@@ -91,19 +85,19 @@ class MeetingServiceTest {
                 null,
                 "test",
                 60,
-                admin.getIdA(),
+                personnel.getIdA(),
                 List.of(student1.getIdA(), student2.getIdA())
         );
         meetingService.addMeeting(meeting);
-        Meeting meeting2 = meetingService.getMeetingById(2);
+        Meeting meeting2 = meetingService.getMeetingById(2).getBody();
         assertThat(meeting2).isNotNull();
-        assertEquals(meeting2.getOrganiser().getLastName(), admin.getLastName());
+        assertEquals(meeting2.getOrganiser().getLastName(), personnel.getLastName());
 
     }
 
     @Test
     void getMeetingById() {
-        Meeting meeting = meetingService.getMeetingById(1);
+        Meeting meeting = meetingService.getMeetingById(1).getBody();
         assertThat(meeting).isNotNull();
         System.out.println(meeting.getTitle());
     }
@@ -119,20 +113,20 @@ class MeetingServiceTest {
                 List.of(student1.getIdA())
         );
         meetingService.updateMeeting(1, request);
-        Meeting meeting = meetingService.getMeetingById(1);
+        Meeting meeting = meetingService.getMeetingById(1).getBody();
         assertEquals(meeting.getParticipants().size(), 1);
     }
 
     @Test
     void getMeetingParticipants() {
-        Meeting meeting = meetingService.getMeetingById(1);
+        Meeting meeting = meetingService.getMeetingById(1).getBody();
         assertEquals(meeting.getParticipants().size(), 2);
     }
 
     @Test
     void getMeetingOrganiser() {
-        Meeting meeting = meetingService.getMeetingById(1);
-        assertEquals(meeting.getOrganiser().getLastName(), admin.getLastName());
+        Meeting meeting = meetingService.getMeetingById(1).getBody();
+        assertEquals(meeting.getOrganiser().getLastName(), personnel.getLastName());
     }
 
     @Test

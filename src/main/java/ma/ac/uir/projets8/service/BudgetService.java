@@ -4,10 +4,16 @@ package ma.ac.uir.projets8.service;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.exception.BudgetNotFoundException;
 import ma.ac.uir.projets8.exception.DocumentNotFoundException;
+import ma.ac.uir.projets8.exception.MeetingNotFoundException;
 import ma.ac.uir.projets8.model.Budget;
+import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.repository.BudgetRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,5 +48,13 @@ public class BudgetService {
             throw new BudgetNotFoundException(id);
         }
         budgetRepository.deleteById(id);
+    }
+
+    public ResponseEntity<List<Transaction>> getTransactionsByBudget(Long id){
+        try {
+            return ResponseEntity.ok(new ArrayList<>(budgetRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getTransactions()));
+        }catch (MeetingNotFoundException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }

@@ -1,13 +1,11 @@
 package ma.ac.uir.projets8.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ma.ac.uir.projets8.model.Admin;
+import ma.ac.uir.projets8.model.Personnel;
 import ma.ac.uir.projets8.model.enums.Role;
-import ma.ac.uir.projets8.repository.AdminRepository;
-import org.junit.jupiter.api.BeforeAll;
+import ma.ac.uir.projets8.repository.PersonnelRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,29 +21,25 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
-import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith({RestDocumentationExtension.class, SpringExtension.class})
 @SpringBootTest
 @WebAppConfiguration
 @ContextConfiguration
-class AdminControllerTest {
+class PersonnelControllerTest {
 
     @Autowired
     private WebApplicationContext context;
 
     @Autowired
-    private AdminRepository adminRepository;
+    private PersonnelRepository personnelRepository;
 
 
     private MockMvc mockMvc;
@@ -58,70 +52,70 @@ class AdminControllerTest {
     }
 
     @Test
-    void addAdmin() throws Exception {
+    void addPersonnel() throws Exception {
 
-        AdminController.NewAdminRequest adminRequest = new AdminController.NewAdminRequest("lastname","firstname","test-email","password");
+        PersonnelController.NewPersonnelRequest personnelRequest = new PersonnelController.NewPersonnelRequest("lastname","firstname","test-email","password");
         ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(adminRequest);
+        String json = objectMapper.writeValueAsString(personnelRequest);
 
         System.out.println(json);
 
-        this.mockMvc.perform(post("/api/v1/admins").content(json).characterEncoding("utf-8"))
+        this.mockMvc.perform(post("/api/v1/personnels").content(json).characterEncoding("utf-8"))
                 .andDo(document("post",preprocessRequest(prettyPrint()),preprocessResponse(prettyPrint())));
     }
     @Test
-    void getAllAdmins() throws Exception {
+    void getAllPersonnels() throws Exception {
 
-        Admin admin = new Admin();
-        admin.setEmail("email");
-        admin.setFirstName("yassine");
-        admin.setLastName("mouddene");
-        admin.setPassword("password");
-        admin.setRoles(List.of(Role.ADMIN));
+        Personnel personnel = new Personnel();
+        personnel.setEmail("email");
+        personnel.setFirstName("yassine");
+        personnel.setLastName("mouddene");
+        personnel.setPassword("password");
+        personnel.setRoles(List.of(Role.ADMIN));
 
-        Admin admin2 = new Admin();
-        admin2.setEmail("email2");
-        admin2.setFirstName("hamza");
-        admin2.setLastName("messouab");
-        admin2.setPassword("password");
-        admin2.setRoles(List.of(Role.ADMIN));
+        Personnel personnel2 = new Personnel();
+        personnel2.setEmail("email2");
+        personnel2.setFirstName("hamza");
+        personnel2.setLastName("messouab");
+        personnel2.setPassword("password");
+        personnel2.setRoles(List.of(Role.ADMIN));
 
 
-        this.adminRepository.save(admin);
-        this.adminRepository.save(admin2);
+        this.personnelRepository.save(personnel);
+        this.personnelRepository.save(personnel2);
 
-        this.mockMvc.perform(get("/api/v1/admins").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+        this.mockMvc.perform(get("/api/v1/personnels").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andDo(document("get all",preprocessRequest(prettyPrint()),preprocessResponse(prettyPrint())));
     }
 
     @Test
-    void getAdminById() throws Exception {
+    void getPersonnelById() throws Exception {
 
-        Admin admin = new Admin();
-        admin.setEmail("email3");
-        admin.setFirstName("yassine");
-        admin.setLastName("mouddene");
-        admin.setPassword("password");
-        admin.setRoles(List.of(Role.ADMIN));
+        Personnel personnel = new Personnel();
+        personnel.setEmail("email3");
+        personnel.setFirstName("yassine");
+        personnel.setLastName("mouddene");
+        personnel.setPassword("password");
+        personnel.setRoles(List.of(Role.ADMIN));
 
 
-        this.adminRepository.save(admin);
+        this.personnelRepository.save(personnel);
 
-        this.mockMvc.perform(get("/api/v1/admins/1").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+        this.mockMvc.perform(get("/api/v1/personnels/1").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andDo(document("index",preprocessRequest(prettyPrint()),preprocessResponse(prettyPrint())));
     }
 
     @Test
-    void deleteAdmin() throws Exception {
+    void deletePersonnel() throws Exception {
 
-        this.mockMvc.perform(delete("/api/v1/admins/1")).andExpect(status().isOk())
+        this.mockMvc.perform(delete("/api/v1/personnels/1")).andExpect(status().isOk())
                 .andDo(document("delete",preprocessRequest(prettyPrint()),preprocessResponse(prettyPrint())));
     }
 
     @Test
-    void updateAdmin() throws Exception {
+    void updatePersonnel() throws Exception {
 
-        this.mockMvc.perform(delete("/api/v1/admins/1")).andExpect(status().isOk())
+        this.mockMvc.perform(delete("/api/v1/personnels/1")).andExpect(status().isOk())
                 .andDo(document("delete",preprocessRequest(prettyPrint()),preprocessResponse(prettyPrint())));
     }
 }

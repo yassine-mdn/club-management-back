@@ -2,6 +2,7 @@ package ma.ac.uir.projets8.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 import java.util.Set;
@@ -29,14 +30,20 @@ public class Transaction {
 
     @ManyToOne
     private Event event;
+
     private Date date;
+
     private double valeur;
 
     @OneToMany
     private Set<Document> preuve;
+
+    @JsonIgnore
     @ManyToOne
     private Budget budget;
+
     private Boolean isValide;
+
 
 
 }

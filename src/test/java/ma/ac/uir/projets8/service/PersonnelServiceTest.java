@@ -9,7 +9,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class AdminServiceTest {
+class PersonnelServiceTest {
 
     @Test
     void getAllAdmins() {
