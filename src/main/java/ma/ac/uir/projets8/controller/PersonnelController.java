@@ -7,81 +7,80 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import ma.ac.uir.projets8.model.Admin;
-import ma.ac.uir.projets8.model.Student;
-import ma.ac.uir.projets8.repository.AdminRepository;
-import ma.ac.uir.projets8.service.AdminService;
+import ma.ac.uir.projets8.model.Personnel;
+import ma.ac.uir.projets8.model.enums.Role;
+import ma.ac.uir.projets8.repository.PersonnelRepository;
+import ma.ac.uir.projets8.service.PersonnelService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/admins")
-public class AdminController {
+@RequestMapping("/api/v1/personnels")
+public class PersonnelController {
 
-    private final AdminRepository adminRepository;
-    private final AdminService adminService;
+    private final PersonnelRepository personnelRepository;
+    private final PersonnelService personnelService;
 
 
     //@PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    @Operation(summary = "create a new Admin", description = "adds an admin account to the database")
+    @Operation(summary = "create a new Personnel", description = "adds an personnel account to the database")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Admin account successfully created"),
+            @ApiResponse(responseCode = "201", description = "Personnel account successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid request"),
             @ApiResponse(responseCode = "406", description = "Email already exists")
     })
-    public ResponseEntity<String> addAdmin(@RequestBody NewAdminRequest request) {
-        return adminService.addAdmin(request);
+    public ResponseEntity<String> addPersonnel(@RequestBody NewPersonnelRequest request) {
+        return personnelService.addPersonnel(request);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "get All Admins", description = "returns all the admin accounts ", deprecated = true)
+    @Operation(summary = "get All Personnels", description = "returns all the personnel accounts ", deprecated = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved")
     })
     @GetMapping
-    public ResponseEntity<List<Admin>> getAllAdmins() {
-        return adminService.getAllAdmins();
+    public ResponseEntity<List<Personnel>> getAllPersonnels() {
+        return personnelService.getAllPersonnels();
     }
 
-    @Operation(summary = "get an admin account by id", description = "returns an admin account per the id")
+    @Operation(summary = "get an personnel account by id", description = "returns an personnel account per the id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
-    @GetMapping("{admin_id}")
-    public ResponseEntity<Admin> getAdminById(@PathVariable("admin_id") Integer id) {
-        return adminService.getAdminById(id);
+    @GetMapping("{personnel_id}")
+    public ResponseEntity<Personnel> getPersonnelById(@PathVariable("personnel_id") Integer id) {
+        return personnelService.getPersonnelById(id);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "update an account by id", description = "updates the admin account with the specified id")
+    @Operation(summary = "update an account by id", description = "updates the personnel account with the specified id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
-    @PutMapping("{admin_id}")
-    public ResponseEntity<String> updateAdmin(@PathVariable("admin_id") Integer id, @RequestBody NewAdminRequest request) {
-        return adminService.updateAdmin(id, request);
+    @PutMapping("{personnel_id}")
+    public ResponseEntity<String> updatePersonnel(@PathVariable("personnel_id") Integer id, @RequestBody NewPersonnelRequest request) {
+        return personnelService.updatePersonnel(id, request);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "delete an account with id", description = "delete the admin account with the specified id")
+    @Operation(summary = "delete an account with id", description = "delete the personnel account with the specified id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "deleted updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
-    @DeleteMapping("{admin_id}")
-    public ResponseEntity<String> deleteAdmin(@PathVariable("admin_id") Integer id) {
+    @DeleteMapping("{personnel_id}")
+    public ResponseEntity<String> deletePersonnel(@PathVariable("personnel_id") Integer id) {
 
-        return adminService.deleteAdmin(id);
+        return personnelService.deletePersonnel(id);
     }
 
-    @Operation(summary = "get a page of Admins", description = "returns a specific page of admin accounts with the specified number of lines")
+    @Operation(summary = "get a page of Personnels", description = "returns a specific page of personnel accounts with the specified number of lines")
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",
@@ -92,17 +91,18 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
     @GetMapping("/page={pageNumber}/size={size}")
-    public ResponseEntity<List<Admin>> getAdminsPageable(
+    public ResponseEntity<List<Personnel>> getPersonnelsPageable(
             @PathVariable Integer pageNumber,
             @PathVariable Integer size
     ) {
-        return adminService.getAdminsPage(pageNumber, size);
+        return personnelService.getPersonnelsPage(pageNumber, size);
     }
 
-    public record NewAdminRequest(
+    public record NewPersonnelRequest(
             String lastName,
             String firstName,
             String email,
+            Role role,
             String password
     ) {
     }

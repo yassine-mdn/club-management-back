@@ -12,7 +12,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -20,3 +20,20 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   api-docs:
     path: /api-docs
+#Spring Security
+  security:
+    oauth2:
+      client:
+        provider:
+          azure:
+            issuer-uri: ${AZURE_AD_ISSUER_URI}
+        registration:
+          azure-dev:
+            provider: azure
+            client-id: ${AZURE_AD_CLIENT_ID}
+            client-secret: ${AZURE_AD_CLIENT_SECRET}
+            scope:
+              - openid
+              - email
+              - profile
+

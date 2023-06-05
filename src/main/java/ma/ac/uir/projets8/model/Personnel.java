@@ -7,5 +7,5 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Admin extends Account{
+public class Personnel extends Account{
 }

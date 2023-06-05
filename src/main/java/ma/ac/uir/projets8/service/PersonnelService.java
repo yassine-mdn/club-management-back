@@ -1,21 +1,18 @@
 package ma.ac.uir.projets8.service;
 
 import lombok.RequiredArgsConstructor;
-import ma.ac.uir.projets8.controller.AdminController.*;
+import ma.ac.uir.projets8.controller.PersonnelController.*;
 import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
-import ma.ac.uir.projets8.model.Admin;
-import ma.ac.uir.projets8.model.Meeting;
-import ma.ac.uir.projets8.repository.AdminRepository;
+import ma.ac.uir.projets8.model.Personnel;
+import ma.ac.uir.projets8.repository.PersonnelRepository;
 import ma.ac.uir.projets8.util.NullChecker;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -24,71 +21,71 @@ import static ma.ac.uir.projets8.model.enums.Role.ADMIN;
 
 @RequiredArgsConstructor
 @Service
-public class AdminService {
+public class PersonnelService {
 
-    private final AdminRepository adminRepository;
+    private final PersonnelRepository personnelRepository;
 
-    public ResponseEntity<List<Admin>> getAllAdmins() {
+    public ResponseEntity<List<Personnel>> getAllPersonnels() {
 
-        return ResponseEntity.ok(adminRepository.findAll());
+        return ResponseEntity.ok(personnelRepository.findAll());
     }
 
-    public ResponseEntity<String> addAdmin(NewAdminRequest request) {
+    public ResponseEntity<String> addPersonnel(NewPersonnelRequest request) {
 
         if (NullChecker.hasNull(request))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        if (adminRepository.existsByEmail(request.email()))
+        if (personnelRepository.existsByEmail(request.email()))
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Email already exists");
-        Admin admin = new Admin();
-        admin.setLastName(request.lastName());
-        admin.setFirstName(request.firstName());
-        admin.setEmail(request.email());
-        admin.setPassword(request.password());
-        admin.setRoles(List.of(ADMIN));
-        adminRepository.save(admin);
-        return new ResponseEntity<>("Admin account successfully created", HttpStatus.CREATED);
+        Personnel personnel = new Personnel();
+        personnel.setLastName(request.lastName());
+        personnel.setFirstName(request.firstName());
+        personnel.setEmail(request.email());
+        personnel.setPassword(request.password());
+        personnel.setRoles(List.of(request.role()));
+        personnelRepository.save(personnel);
+        return new ResponseEntity<>("Personnel account successfully created", HttpStatus.CREATED);
     }
 
-    public ResponseEntity<Admin> getAdminById(Integer id) {
+    public ResponseEntity<Personnel> getPersonnelById(Integer id) {
         try {
-            return ResponseEntity.ok(adminRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id)));
+            return ResponseEntity.ok(personnelRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id)));
         } catch (AccountNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
 
     }
 
-    public ResponseEntity<String> updateAdmin(Integer id, NewAdminRequest request) {
-        adminRepository.findById(id)
-                .map(admin -> {
+    public ResponseEntity<String> updatePersonnel(Integer id, NewPersonnelRequest request) {
+        personnelRepository.findById(id)
+                .map(personnel -> {
                             if (!request.firstName().isEmpty())
-                                admin.setFirstName(request.firstName());
+                                personnel.setFirstName(request.firstName());
                             if (!request.lastName().isEmpty())
-                                admin.setLastName(request.lastName());
+                                personnel.setLastName(request.lastName());
                             if (!request.email().isEmpty())
-                                admin.setEmail(request.email());
+                                personnel.setEmail(request.email());
                             if (!request.password().isEmpty())
-                                admin.setPassword(request.password());
-                            return adminRepository.save(admin);
+                                personnel.setPassword(request.password());
+                            return personnelRepository.save(personnel);
                         }
                 ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage()));
-        return new ResponseEntity<>("Admin account with " + id + " successfully updated", HttpStatus.ACCEPTED);
+        return new ResponseEntity<>("Personnel account with " + id + " successfully updated", HttpStatus.ACCEPTED);
     }
 
-    public ResponseEntity<String> deleteAdmin(Integer id) {
+    public ResponseEntity<String> deletePersonnel(Integer id) {
         try {
 
-            adminRepository.deleteById(id);
+            personnelRepository.deleteById(id);
             return ResponseEntity.ok("deleted successfully");
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage());
         }
     }
 
-    public ResponseEntity<List<Admin>> getAdminsPage(int pageNumber, int size) {
+    public ResponseEntity<List<Personnel>> getPersonnelsPage(int pageNumber, int size) {
         if (pageNumber < 0 || size < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Admin> resultPage = adminRepository.findAll(PageRequest.of(pageNumber, size));
+        Page<Personnel> resultPage = personnelRepository.findAll(PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
