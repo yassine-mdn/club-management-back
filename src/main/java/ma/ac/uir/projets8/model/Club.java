@@ -1,5 +1,4 @@
 package ma.ac.uir.projets8.model;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,13 +12,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.Set;
+
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Entity
+@Builder
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Club {
-
     @Id
     @SequenceGenerator(
             name = "club_id_sequence",
@@ -76,5 +82,10 @@ public class Club {
             student.setMangedClub(this);
         }
     }
+
+
+    @ManyToMany
+    private Set<Event> events;
+
 
 }
