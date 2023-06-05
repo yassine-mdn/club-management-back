@@ -3,8 +3,10 @@ package ma.ac.uir.projets8.model;
 import jakarta.persistence.*;
 import lombok.*;
 import ma.ac.uir.projets8.model.enums.EventStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -32,19 +34,9 @@ public class Event {
 
     private String description;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "event")
-    private Set<Transaction> budget;
-
-    @ManyToMany
-    @JoinTable(
-            name = "event_participant",
-            joinColumns = @JoinColumn(name = "id_event"),
-            inverseJoinColumns = @JoinColumn(name = "id_participant")
-    )
-    private Set<Account> participants;
-
-    @Enumerated(EnumType.STRING)
-    private EventStatus status;
+    private Set<Transaction> transcations;
 
     @ManyToMany
     @JoinTable(
@@ -55,5 +47,24 @@ public class Event {
     private Set<Club> organisateurs;
 
     private Date date;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "event_participant",
+            joinColumns = @JoinColumn(name = "id_event"),
+            inverseJoinColumns = @JoinColumn(name = "id_participant")
+    )
+    private Set<Account> participants;
+
+    private EventStatus status;
+    public void addTransactions(List<Transaction> transactions) {
+        for (Transaction transaction : transactions) {
+            transaction.setEvent(this);
+            this.transcations.add(transaction);
+
+        }
+    }
+
 
 }

@@ -64,6 +64,14 @@ public class Club {
     @PrimaryKeyJoinColumn
     private ClubDetails clubDetails;
 
+    @JsonIgnore
+    @ManyToMany
+    private Set<Event> events;
+
+
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER,optional = false)
+    private Budget budget;
+
     public void addMember(List<Student> students){
         for (Student student : students) {
             members.add(student);
@@ -83,9 +91,6 @@ public class Club {
         }
     }
 
-
-    @ManyToMany
-    private Set<Event> events;
 
 
 }

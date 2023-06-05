@@ -1,7 +1,7 @@
 package ma.ac.uir.projets8.model.enums;
 
 public enum EventStatus {
-    ON_GOING,
+    REQUESTED,
     APPROVED,
     REJECTED,
     POST_EVENT,

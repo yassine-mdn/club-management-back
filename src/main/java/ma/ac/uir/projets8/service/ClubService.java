@@ -6,6 +6,7 @@ import ma.ac.uir.projets8.controller.ClubController.NewClubRequest;
 import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.exception.ClubNotFoundException;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
+import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.ClubDetails;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
@@ -50,6 +51,11 @@ public class ClubService {
         club.addCommitteeMembers(studentRepository.findAllById(request.committeeIds()));
         club.setStatus(request.status() == null ? ClubStatus.CREATION_STEP_1 : request.status());
         club.addClubDetails(new ClubDetails());
+        Budget budget = new Budget();
+        budget.setClub(club);
+        budget.setBudget_initial(0.0);
+        budget.setBudget_restant(0.0);
+        club.setBudget(budget);
         clubRepository.save(club);
         return new ResponseEntity<>("Club successfully added to database", HttpStatus.CREATED);
     }
