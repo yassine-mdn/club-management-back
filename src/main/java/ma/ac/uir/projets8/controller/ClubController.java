@@ -140,8 +140,8 @@ public class ClubController {
     public record NewClubRequest(
             String name,
             String description,
+            Integer supervisorId,//Nullable
             Set<Integer> committeeIds,
-            ClubType type,
             ClubStatus status
     ) {
     }

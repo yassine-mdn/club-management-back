@@ -12,6 +12,7 @@ import ma.ac.uir.projets8.model.ClubDetails;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
 import ma.ac.uir.projets8.repository.ClubRepository;
+import ma.ac.uir.projets8.repository.PersonnelRepository;
 import ma.ac.uir.projets8.repository.StudentRepository;
 import ma.ac.uir.projets8.util.NullChecker;
 import org.apache.commons.lang3.ObjectUtils;
@@ -34,6 +35,8 @@ public class ClubService {
 
     private final StudentRepository studentRepository;
 
+    private final PersonnelRepository personnelRepository;
+
     public ResponseEntity<List<Club>> getAllClubs() {
 
         return ResponseEntity.ok(clubRepository.findAll());
@@ -46,8 +49,9 @@ public class ClubService {
         Club club = new Club();
         club.setName(request.name());
         club.setDescription(request.description());
-        club.setType(request.type() == null ? ClubType.NORMAL : request.type());
-        //TODO: Add club to supervised admins account
+        club.setType(request.supervisorId() == null ? ClubType.NORMAL : ClubType.ACADEMIC);
+        if (request.supervisorId() != null)
+            club.addSupervisor(personnelRepository.findById(request.supervisorId()).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid supervisor id request")));
         club.addCommitteeMembers(studentRepository.findAllById(request.committeeIds()));
         club.setStatus(request.status() == null ? ClubStatus.CREATION_STEP_1 : request.status());
         club.addClubDetails(new ClubDetails());
@@ -77,8 +81,8 @@ public class ClubService {
                         club.setDescription(request.description());
                     if (!request.committeeIds().isEmpty())
                         club.addCommitteeMembers(studentRepository.findAllById(request.committeeIds()));
-                    if (request.type() != null)
-                        club.setType(request.type());
+                    if (request.supervisorId() != null)
+                        club.addSupervisor(personnelRepository.findById(request.supervisorId()).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid supervisor id request")));
                     if (request.status() != null)
                         club.setStatus(request.status());
                     return clubRepository.save(club);

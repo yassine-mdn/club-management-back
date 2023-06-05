@@ -59,6 +59,10 @@ public class Club {
 
     private ClubStatus status;
 
+    @ManyToOne
+    @JoinColumn(name = "id_supervisor")
+    private Personnel supervisor;
+
     @JsonIgnore
     @OneToOne(mappedBy = "club",cascade = CascadeType.ALL,fetch = FetchType.LAZY,optional = false)
     @PrimaryKeyJoinColumn
@@ -89,6 +93,11 @@ public class Club {
             committeeMembers.add(student);
             student.setMangedClub(this);
         }
+    }
+
+    public void addSupervisor(Personnel personnel){
+        this.supervisor = personnel;
+        personnel.getManagedClubs().add(this);
     }
 
 

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.PersonnelController.*;
 import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
+import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.Personnel;
 import ma.ac.uir.projets8.repository.PersonnelRepository;
 import ma.ac.uir.projets8.util.NullChecker;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static ma.ac.uir.projets8.model.enums.Role.ADMIN;
@@ -92,6 +94,14 @@ public class PersonnelService {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Club>> getClubsByPersonnelId(Integer id) {
+        try {
+            return ResponseEntity.ok(new ArrayList<>(personnelRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id)).getManagedClubs()));
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
 }

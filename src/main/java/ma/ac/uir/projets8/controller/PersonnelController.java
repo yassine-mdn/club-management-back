@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.Personnel;
 import ma.ac.uir.projets8.model.enums.Role;
 import ma.ac.uir.projets8.repository.PersonnelRepository;
@@ -78,6 +79,16 @@ public class PersonnelController {
     public ResponseEntity<String> deletePersonnel(@PathVariable("personnel_id") Integer id) {
 
         return personnelService.deletePersonnel(id);
+    }
+
+    @Operation(summary = "get the managed clubs", description = "returns the lsit of clubs managed by the personnel account with the specified id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
+    @GetMapping("{personnel_id}/clubs")
+    public ResponseEntity<List<Club>> getManagedClubs(@PathVariable("personnel_id") Integer id) {
+        return personnelService.getClubsByPersonnelId(id);
     }
 
     @Operation(summary = "get a page of Personnels", description = "returns a specific page of personnel accounts with the specified number of lines")
