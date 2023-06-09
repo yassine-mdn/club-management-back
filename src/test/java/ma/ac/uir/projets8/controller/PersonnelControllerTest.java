@@ -54,7 +54,7 @@ class PersonnelControllerTest {
     @Test
     void addPersonnel() throws Exception {
 
-        PersonnelController.NewPersonnelRequest personnelRequest = new PersonnelController.NewPersonnelRequest("lastname","firstname","test-email","password");
+        PersonnelController.NewPersonnelRequest personnelRequest = new PersonnelController.NewPersonnelRequest("lastname","firstname","test-email",Role.ADMIN,"password");
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(personnelRequest);
 
