@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.ClubDetails;
@@ -18,7 +19,9 @@ import ma.ac.uir.projets8.service.ClubDetailsService;
 import ma.ac.uir.projets8.service.ClubService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -102,7 +105,7 @@ public class ClubController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved")
     })
-    @GetMapping("/status/{status}") 
+    @GetMapping("/status/{status}")
     public ResponseEntity<List<Club>> getAllClubsWithStatus(@PathVariable("status") ClubStatus status) {
         return clubService.getClubsByStatus(status);
     }
@@ -159,6 +162,16 @@ public class ClubController {
         return clubService.getClubsPage(pageNumber, size);
     }
 
+    @PostMapping("/{club_id}/members")
+    public ResponseEntity<String> batchAddClubs(@RequestParam("file") MultipartFile file, @PathVariable("club_id") Integer id) throws IOException {
+        return ResponseEntity.ok(clubService.addMembersFromFile(file, id));
+    }
+
+    @GetMapping("/test")
+    public void test(HttpServletResponse response) {
+        clubService.getClubMembersFile(4,response);
+    }
+
     public record NewClubRequest(
             String name,
             String description,
@@ -177,7 +190,7 @@ public class ClubController {
             String aboutUs,
             List<String> socials,
             List<String> medias
-           
+
     ) {
     }
 }

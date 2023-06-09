@@ -1,14 +1,12 @@
 package ma.ac.uir.projets8.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -24,12 +22,15 @@ public class Student extends Account{
 
     @JsonIgnore
     @ManyToMany(mappedBy = "members")
-    private Set<Club> joinedClubs;  //smiya tbel l clubs li m9iyed fihoum
+    private Set<Club> joinedClubs = new HashSet<>();
 
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_manged_club",nullable = true)
     private Club mangedClub;
+
+    @Column(unique = true)
+    private Integer studentId;
 
 
 }
