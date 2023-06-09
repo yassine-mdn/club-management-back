@@ -72,6 +72,9 @@ public class Club {
     @ManyToMany
     private Set<Event> events;
 
+    @OneToMany
+    private Set<Document> documents;
+
 
     @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER,optional = false)
     private Budget budget;

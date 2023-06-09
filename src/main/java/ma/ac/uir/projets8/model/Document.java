@@ -1,4 +1,5 @@
 package ma.ac.uir.projets8.model;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,11 +26,17 @@ public class Document {
     )
     private Long idDocument;
 
-    private String libelle;
+    private String name;
+    private String type;
 
-    private String chemin;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String path;
     private Long size;
-    private Date date;
+    private Date dateUpload;
+
+    @ManyToOne
+    @JoinColumn(name = "sender_id",nullable = false)
+    private Club sender;
 
 
 }
