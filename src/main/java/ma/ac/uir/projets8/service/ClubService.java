@@ -6,9 +6,7 @@ import ma.ac.uir.projets8.controller.ClubController.NewClubRequest;
 import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.exception.ClubNotFoundException;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
-import ma.ac.uir.projets8.model.Budget;
-import ma.ac.uir.projets8.model.Club;
-import ma.ac.uir.projets8.model.ClubDetails;
+import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
 import ma.ac.uir.projets8.repository.ClubRepository;
@@ -24,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -104,6 +103,24 @@ public class ClubService {
     public ResponseEntity<List<Club>> getClubsByStatus(ClubStatus status) {
 
         return ResponseEntity.ok(clubRepository.findAllByStatus(status));
+    }
+
+    public ResponseEntity<List<Event>> getClubEvents(Integer id) {
+
+        try {
+            return ResponseEntity.ok(new ArrayList<>(clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id)).getEvents()));
+        } catch (ClubNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    public ResponseEntity<List<Student>> getClubMembers(Integer id) {
+
+        try {
+            return ResponseEntity.ok(new ArrayList<>(clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id)).getMembers()));
+        } catch (ClubNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
     public ResponseEntity<List<Club>> getClubsPage(Integer pageNumber, Integer size) {
