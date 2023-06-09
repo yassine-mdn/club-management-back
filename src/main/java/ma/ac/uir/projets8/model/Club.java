@@ -49,7 +49,7 @@ public class Club {
     )
     private Set<Student> members = new HashSet<>();
 
-    @JsonIgnore
+
     @OneToMany(mappedBy = "mangedClub")
     private Set<Student> committeeMembers = new HashSet<>();
 

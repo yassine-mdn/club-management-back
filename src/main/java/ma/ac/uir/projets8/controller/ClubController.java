@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.ClubDetails;
+import ma.ac.uir.projets8.model.Event;
 import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
@@ -73,6 +74,27 @@ public class ClubController {
     @GetMapping("{club_id}/details")
     public ResponseEntity<ClubDetails> getClubDetailsById(@PathVariable("club_id") Integer id) {
         return clubDetailsService.getClubDetailsById(id);
+    }
+
+
+    @Operation(summary = "get an club events by id", description = "returns events organized by a club per the id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
+    @GetMapping("{club_id}/events")
+    public ResponseEntity<List<Event>> getClubEvents(@PathVariable("club_id") Integer id) {
+        return clubService.getClubEvents(id);
+    }
+
+    @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
+    @GetMapping("{club_id}/members")
+    public ResponseEntity<List<Student>> getClubMembers(@PathVariable("club_id") Integer id) {
+        return clubService.getClubMembers(id);
     }
 
 
