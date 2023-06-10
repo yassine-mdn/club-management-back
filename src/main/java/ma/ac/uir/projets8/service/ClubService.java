@@ -155,10 +155,10 @@ public class ClubService {
                 ws.value(0, 2, "email");
                 ws.value(0, 3, "Student id");
                 for (int i = 0; i < members.size(); i++) {
-                    ws.value(i+1, 0, members.get(i).getFirstName());
-                    ws.value(i+1, 1, members.get(i).getLastName());
-                    ws.value(i+1, 2, members.get(i).getEmail());
-                    ws.value(i+1, 3, members.get(i).getStudentId());
+                    ws.value(i + 1, 0, members.get(i).getFirstName());
+                    ws.value(i + 1, 1, members.get(i).getLastName());
+                    ws.value(i + 1, 2, members.get(i).getEmail());
+                    ws.value(i + 1, 3, members.get(i).getStudentId());
                 }
                 ws.finish();
                 wb.finish();
@@ -172,7 +172,7 @@ public class ClubService {
                 FileInputStream in = new FileInputStream(file);
 
                 // copy from in to out
-                IOUtils.copy(in,out);
+                IOUtils.copy(in, out);
 
                 out.close();
                 in.close();
@@ -226,6 +226,19 @@ public class ClubService {
         if (pageNumber < 0 || size < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
         Page<Club> resultPage = clubRepository.findAll(PageRequest.of(pageNumber, size));
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
+
+
+    public ResponseEntity<List<Club>> getCubsPageBySearch(String searchKeyWord, Integer pageNumber, Integer size) {
+        if (pageNumber < 0 || size < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+        Page<Club> resultPage = clubRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(searchKeyWord, searchKeyWord, PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
