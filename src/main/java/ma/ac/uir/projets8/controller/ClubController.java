@@ -166,6 +166,27 @@ public class ClubController {
 
     }
 
+
+    @Operation(summary = "get a page of Clubs with extra details", description = "returns a specific page of clubs with the specified number of lines")
+
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
+    })
+    @GetMapping("/details")
+    public ResponseEntity<List<ClubDetails>> getClubsDetailsPageable(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size
+    ) {
+
+            return clubDetailsService.getClubsDetailsPage(pageNumber, size);
+
+    }
+
     @PostMapping("/{club_id}/members")
     public ResponseEntity<String> batchAddClubs(@RequestParam("file") MultipartFile file, @PathVariable("club_id") Integer id) throws IOException {
         return ResponseEntity.ok(clubService.addMembersFromFile(file, id));
