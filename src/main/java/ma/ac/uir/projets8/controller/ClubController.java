@@ -48,15 +48,6 @@ public class ClubController {
         return clubService.addClub(request);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "get All Clubs", description = "returns all the club ", deprecated = true)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully retrieved")
-    })
-    @GetMapping
-    public ResponseEntity<List<Club>> getAllClubs() {
-        return clubService.getAllClubs();
-    }
 
     @Operation(summary = "get an club  by id", description = "returns an club per the id")
     @ApiResponses(value = {
@@ -162,6 +153,19 @@ public class ClubController {
         return clubService.getClubsPage(pageNumber, size);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Club>> getClubsPageable(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size,
+            @RequestParam(name = "search",required = false) String searchKeyWord
+    ) {
+        if (searchKeyWord != null)
+            return clubService.getCubsPageBySearch(searchKeyWord, pageNumber, size);
+        else
+            return clubService.getClubsPage(pageNumber, size);
+
+    }
+
     @PostMapping("/{club_id}/members")
     public ResponseEntity<String> batchAddClubs(@RequestParam("file") MultipartFile file, @PathVariable("club_id") Integer id) throws IOException {
         return ResponseEntity.ok(clubService.addMembersFromFile(file, id));
@@ -169,7 +173,7 @@ public class ClubController {
 
     @GetMapping("/test")
     public void test(HttpServletResponse response) {
-        clubService.getClubMembersFile(4,response);
+        clubService.getClubMembersFile(4, response);
     }
 
     public record NewClubRequest(
