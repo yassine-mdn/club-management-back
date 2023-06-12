@@ -10,7 +10,9 @@ import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
+import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.repository.ClubRepository;
+import ma.ac.uir.projets8.repository.EventRepository;
 import ma.ac.uir.projets8.repository.PersonnelRepository;
 import ma.ac.uir.projets8.repository.StudentRepository;
 import ma.ac.uir.projets8.util.NullChecker;
@@ -43,6 +45,8 @@ import java.util.stream.Stream;
 public class ClubService {
 
     private final ClubRepository clubRepository;
+
+    private final EventRepository eventRepository;
 
     private final StudentRepository studentRepository;
 
@@ -86,11 +90,11 @@ public class ClubService {
 
     public ResponseEntity<String> updateClub(Integer id, NewClubRequest request) {
         clubRepository.findById(id).map(club -> {
-                    if (!request.name().isEmpty())
+                    if (request.name() != null )
                         club.setName(request.name());
-                    if (!request.description().isEmpty())
+                    if (request.description() != null)
                         club.setDescription(request.description());
-                    if (!request.committeeIds().isEmpty())
+                    if (request.committeeIds() != null)
                         club.addCommitteeMembers(studentRepository.findAllById(request.committeeIds()));
                     if (request.supervisorId() != null)
                         club.addSupervisor(personnelRepository.findById(request.supervisorId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid supervisor id request")));
@@ -120,17 +124,33 @@ public class ClubService {
     public ResponseEntity<List<Event>> getClubEvents(Integer id) {
 
         try {
-            return ResponseEntity.ok(new ArrayList<>(clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id)).getEvents()));
+            Club temp = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+            return ResponseEntity.ok(new ArrayList<>(temp.getEvents()));
         } catch (ClubNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
-    public ResponseEntity<List<Student>> getClubMembers(Integer id) {
+    public ResponseEntity<List<Student>> getClubMembers(Integer id,Integer pageNumber, Integer size) {
+
+        Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+        if (pageNumber < 0 || size < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+        Page<Student> resultPage = studentRepository.findAllByJoinedClubs(club,PageRequest.of(pageNumber, size));
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
+
+
+    public ResponseEntity<List<Event>> getCurrentEvents(Integer id) {
 
         try {
-            return ResponseEntity.ok(new ArrayList<>(clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id)).getMembers()));
-
+            Club temp = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+            return ResponseEntity.ok(new ArrayList<>(eventRepository.findAllByOrganisateurAndStatusIn(temp,List.of(EventStatus.REQUESTED, EventStatus.APPROVED))));
         } catch (ClubNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
@@ -221,6 +241,8 @@ public class ClubService {
         return "members added successfully";
     }
 
+
+
     public ResponseEntity<List<Club>> getClubsPage(Integer pageNumber, Integer size) {
 
         if (pageNumber < 0 || size < 0)
@@ -245,5 +267,11 @@ public class ClubService {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Club>> getPendingClubs(){
+        List<Club> c =clubRepository.findAllByStatusIn(List.of(ClubStatus.CREATION_STEP_2,ClubStatus.CREATION_STEP_1,ClubStatus.CREATION_STEP_3));
+        System.out.println(c);
+        return ResponseEntity.of(Optional.ofNullable(c));
     }
 }

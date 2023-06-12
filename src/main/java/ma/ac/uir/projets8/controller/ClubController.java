@@ -87,8 +87,11 @@ public class ClubController {
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
     @GetMapping("{club_id}/members")
-    public ResponseEntity<List<Student>> getClubMembers(@PathVariable("club_id") Integer id) {
-        return clubService.getClubMembers(id);
+    public ResponseEntity<List<Student>> getClubMembers(
+            @PathVariable("club_id") Integer id,
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size) {
+        return clubService.getClubMembers(id,pageNumber,size);
     }
 
 
@@ -157,7 +160,7 @@ public class ClubController {
     public ResponseEntity<List<Club>> getClubsPageable(
             @RequestParam(name = "pageNumber") Integer pageNumber,
             @RequestParam(name = "pageSize") Integer size,
-            @RequestParam(name = "search",required = false) String searchKeyWord
+            @RequestParam(name = "search", required = false) String searchKeyWord
     ) {
         if (searchKeyWord != null)
             return clubService.getCubsPageBySearch(searchKeyWord, pageNumber, size);
@@ -177,13 +180,13 @@ public class ClubController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
-    @GetMapping("/details")
+    @GetMapping("/detailed")
     public ResponseEntity<List<ClubDetails>> getClubsDetailsPageable(
             @RequestParam(name = "pageNumber") Integer pageNumber,
             @RequestParam(name = "pageSize") Integer size
     ) {
 
-            return clubDetailsService.getClubsDetailsPage(pageNumber, size);
+        return clubDetailsService.getClubsDetailsPage(pageNumber, size);
 
     }
 
@@ -192,10 +195,17 @@ public class ClubController {
         return ResponseEntity.ok(clubService.addMembersFromFile(file, id));
     }
 
-    @GetMapping("/test")
-    public void test(HttpServletResponse response) {
-        clubService.getClubMembersFile(4, response);
+    @GetMapping("/{club_id}/members/file")
+    public void getClubMembersFile(@PathVariable("club_id") Integer id, HttpServletResponse response) {
+
+        clubService.getClubMembersFile(id, response);
     }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<Club>> getPendingClubs() {
+        return clubService.getPendingClubs();
+    }
+
 
     public record NewClubRequest(
             String name,
@@ -212,9 +222,7 @@ public class ClubController {
             String description,
             String email,
             String phone,
-            String aboutUs,
-            List<String> socials,
-            List<String> medias
+            String aboutUs
 
     ) {
     }

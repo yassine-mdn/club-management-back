@@ -36,11 +36,14 @@ public class BudgetService {
         return budgetRepository.findAll();
     }
 
-    public Budget updateBudget(Budget budget) {
-        if (!budgetRepository.existsById(budget.getIdBudget())) {
-            throw new BudgetNotFoundException(budget.getIdBudget());
-        }
-        return budgetRepository.save(budget);
+    public Budget updateBudget(Long id, Budget budget) {
+        return budgetRepository.findById(id)
+                .map(updatedBudget -> {
+                    updatedBudget.setBudget_initial(budget.getBudget_initial());
+                    updatedBudget.setBudget_restant(budget.getBudget_restant());
+                    return budgetRepository.save(budget);
+                })
+                .orElseThrow(() -> new BudgetNotFoundException(id));
     }
 
     public void deleteBudget(Long id) {

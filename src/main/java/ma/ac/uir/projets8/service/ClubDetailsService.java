@@ -23,6 +23,7 @@ import java.util.List;
 public class ClubDetailsService {
 
     private final ClubDetailsRepository clubDetailsRepository;
+
     public ResponseEntity<ClubDetails> getClubDetailsById(Integer id) {
 
         try {
@@ -34,17 +35,17 @@ public class ClubDetailsService {
 
     public ResponseEntity<String> updateClub(Integer id, NewClubDetailsRequest request) {
         clubDetailsRepository.findById(id).map(club -> {
-                    if (!request.logo().isEmpty())
+                    if (request.logo() != null && !request.logo().isEmpty())
                         club.setLogo(request.logo());
-                    if (!request.cover().isEmpty())
+                    if (request.cover() != null && !request.cover().isEmpty())
                         club.setCover(request.cover());
-                    if (!request.description().isEmpty())
+                    if (request.description() != null && !request.description().isEmpty())
                         club.setDescription(request.description());
-                    if (!request.email().isEmpty())
+                    if (request.email() != null && !request.email().isEmpty())
                         club.setEmail(request.email());
-                    if(!request.phone().isEmpty())
+                    if (request.phone() != null && !request.phone().isEmpty())
                         club.setPhone(request.phone());
-                    if(!request.aboutUs().isEmpty())
+                    if (request.aboutUs() != null && !request.aboutUs().isEmpty())
                         club.setAboutUs(request.aboutUs());
                     return clubDetailsRepository.save(club);
                 }

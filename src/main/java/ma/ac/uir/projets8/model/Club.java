@@ -69,10 +69,10 @@ public class Club {
     private ClubDetails clubDetails;
 
     @JsonIgnore
-    @ManyToMany
+    @OneToMany(mappedBy = "organisateur",fetch = FetchType.LAZY)
     private Set<Event> events;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER,mappedBy = "sender")
     private Set<Document> documents;
 
 
