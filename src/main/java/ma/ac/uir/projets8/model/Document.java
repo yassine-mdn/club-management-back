@@ -1,4 +1,5 @@
 package ma.ac.uir.projets8.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +12,6 @@ import java.util.Date;
 @Setter
 @Entity
 @Builder
-@Inheritance(strategy = InheritanceType.JOINED)
 public class Document {
 
     @Id
@@ -34,6 +34,7 @@ public class Document {
     private Long size;
     private Date dateUpload;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "sender_id",nullable = false)
     private Club sender;

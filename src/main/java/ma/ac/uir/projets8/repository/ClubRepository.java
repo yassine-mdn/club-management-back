@@ -15,4 +15,6 @@ public interface ClubRepository extends JpaRepository<Club, Integer> {
 
     Page<Club> findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
     List<Club> findAllByStatus(ClubStatus status);
+
+    List<Club> findAllByStatusIn(List<ClubStatus> statusList);
 }

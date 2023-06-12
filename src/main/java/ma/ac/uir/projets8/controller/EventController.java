@@ -3,6 +3,7 @@ package ma.ac.uir.projets8.controller;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import ma.ac.uir.projets8.model.Account;
+import ma.ac.uir.projets8.model.ClubDetails;
 import ma.ac.uir.projets8.model.Event;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.service.EventService;
@@ -34,13 +35,6 @@ public class EventController {
     @PostMapping
     public ResponseEntity<Event> createEvent(@RequestBody NewEventRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request));
-    }
-
-    @Operation(summary = "Get all events")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved")
-    @GetMapping
-    public ResponseEntity<List<Event>> getAllEvents() {
-        return ResponseEntity.ok(eventService.getAllEvents());
     }
 
     @Operation(summary = "Get an event by ID")
@@ -100,11 +94,21 @@ public class EventController {
         return eventService.getParticipantsByEvent(id);
     }
 
+    @GetMapping()
+    public ResponseEntity<List<Event>> getClubsDetailsPageable(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size
+    ) {
+
+        return eventService.getEventsPage(pageNumber, size);
+
+    }
+
     public record NewEventRequest(
             String name,
             String description,
             Date date,
-            Set<Integer> organizers
+            Integer organizer
     ) {
     }
 }

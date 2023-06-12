@@ -68,7 +68,7 @@ public class BudgetController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<Budget> updateBudget(@PathVariable Long id, @RequestBody Budget updatedBudget) {
-        return ResponseEntity.ok(budgetService.updateBudget(updatedBudget));
+        return ResponseEntity.ok(budgetService.updateBudget(id,updatedBudget));
     }
 
     @Operation(summary = "Delete a budget by ID")
