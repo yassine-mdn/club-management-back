@@ -4,7 +4,6 @@ package ma.ac.uir.projets8.service;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.ClubController.NewClubRequest;
-import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.exception.ClubNotFoundException;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.*;
@@ -15,16 +14,15 @@ import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
 import ma.ac.uir.projets8.repository.PersonnelRepository;
 import ma.ac.uir.projets8.repository.StudentRepository;
-import ma.ac.uir.projets8.util.NullChecker;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.dhatim.fastexcel.Color;
 import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
-import org.dhatim.fastexcel.reader.Cell;
 import org.dhatim.fastexcel.reader.ReadableWorkbook;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.Sheet;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -35,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
@@ -57,6 +54,7 @@ public class ClubService {
         return ResponseEntity.ok(clubRepository.findAll());
     }
 
+    @CacheEvict(value = {"clubs","pendingClubs"}, allEntries = true)
     public ResponseEntity<String> addClub(NewClubRequest request) {
 
         if (!ObjectUtils.allNotNull(request.name(), request.description(), request.committeeIds()))
@@ -88,6 +86,7 @@ public class ClubService {
         }
     }
 
+    @CacheEvict(value = {"clubs","pendingClubs"}, allEntries = true)
     public ResponseEntity<String> updateClub(Integer id, NewClubRequest request) {
         clubRepository.findById(id).map(club -> {
                     if (request.name() != null )
@@ -242,7 +241,7 @@ public class ClubService {
     }
 
 
-
+    @Cacheable(value = "clubs")
     public ResponseEntity<List<Club>> getClubsPage(Integer pageNumber, Integer size) {
 
         if (pageNumber < 0 || size < 0)
@@ -269,6 +268,7 @@ public class ClubService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
+    @Cacheable(value = "pendingClubs")
     public ResponseEntity<List<Club>> getPendingClubs(){
         List<Club> c =clubRepository.findAllByStatusIn(List.of(ClubStatus.CREATION_STEP_2,ClubStatus.CREATION_STEP_1,ClubStatus.CREATION_STEP_3));
         System.out.println(c);
