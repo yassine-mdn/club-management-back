@@ -54,7 +54,7 @@ public class ClubService {
         return ResponseEntity.ok(clubRepository.findAll());
     }
 
-    @CacheEvict(value = {"clubs","pendingClubs"}, allEntries = true)
+    @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
     public ResponseEntity<String> addClub(NewClubRequest request) {
 
         if (!ObjectUtils.allNotNull(request.name(), request.description(), request.committeeIds()))
@@ -86,7 +86,7 @@ public class ClubService {
         }
     }
 
-    @CacheEvict(value = {"clubs","pendingClubs"}, allEntries = true)
+    @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
     public ResponseEntity<String> updateClub(Integer id, NewClubRequest request) {
         clubRepository.findById(id).map(club -> {
                     if (request.name() != null )
@@ -105,6 +105,7 @@ public class ClubService {
         return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
     }
 
+    @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
     public ResponseEntity<String> deleteClub(Integer id) {
 
         try {
@@ -268,7 +269,6 @@ public class ClubService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    @Cacheable(value = "pendingClubs")
     public ResponseEntity<List<Club>> getPendingClubs(){
         List<Club> c =clubRepository.findAllByStatusIn(List.of(ClubStatus.CREATION_STEP_2,ClubStatus.CREATION_STEP_1,ClubStatus.CREATION_STEP_3));
         System.out.println(c);
