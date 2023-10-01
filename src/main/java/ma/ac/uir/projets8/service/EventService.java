@@ -11,6 +11,8 @@ import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +34,7 @@ public class EventService {
 
     private final ClubRepository clubRepository;
 
+    @CacheEvict(value = "events", allEntries = true)
     public Event createEvent(EventController.NewEventRequest request) {
         Event event = new Event();
         event.setName(request.name());
@@ -50,6 +53,7 @@ public class EventService {
         return eventRepository.findAll();
     }
 
+    @CacheEvict(value = "events", allEntries = true)
     public Event updateEvent(Long id, EventController.NewEventRequest request) {
         return eventRepository.findById(id).map(event -> {
             if (!request.name().isEmpty())
@@ -63,6 +67,7 @@ public class EventService {
         }).orElseThrow(() -> new EventNotFoundException(id));
     }
 
+    @CacheEvict(value = "events", allEntries = true)
     public void deleteEvent(Long id) {
         if (!eventRepository.existsById(id)) {
             throw new EventNotFoundException(id);
@@ -88,6 +93,7 @@ public class EventService {
         }
     }
 
+    @Cacheable(value = "events")
     public ResponseEntity<List<Event>> getEventsPage(Integer pageNumber, Integer size) {
 
         if (pageNumber < 0 || size < 0)

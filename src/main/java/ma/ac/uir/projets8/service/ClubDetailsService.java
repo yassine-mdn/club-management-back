@@ -8,6 +8,8 @@ import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.ClubDetails;
 import ma.ac.uir.projets8.repository.ClubDetailsRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +35,7 @@ public class ClubDetailsService {
         }
     }
 
+    @CacheEvict(value = { "clubsDetails","clubs"}, allEntries = true)
     public ResponseEntity<String> updateClub(Integer id, NewClubDetailsRequest request) {
         clubDetailsRepository.findById(id).map(club -> {
                     if (request.logo() != null && !request.logo().isEmpty())
@@ -53,6 +56,7 @@ public class ClubDetailsService {
         return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
     }
 
+    @Cacheable(value = "clubsDetails")
     public ResponseEntity<List<ClubDetails>> getClubsDetailsPage(Integer pageNumber, Integer size) {
 
         if (pageNumber < 0 || size < 0)

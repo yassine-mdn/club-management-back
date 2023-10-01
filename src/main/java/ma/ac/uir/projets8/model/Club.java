@@ -59,6 +59,8 @@ public class Club {
 
     private ClubStatus status;
 
+    //TODO: add featured boolean (za3ma wach pushed to the home page or not)
+
     @ManyToOne
     @JoinColumn(name = "id_supervisor")
     private Personnel supervisor;
