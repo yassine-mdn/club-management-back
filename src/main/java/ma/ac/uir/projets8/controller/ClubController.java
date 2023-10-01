@@ -48,15 +48,6 @@ public class ClubController {
         return clubService.addClub(request);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "get All Clubs", description = "returns all the club ", deprecated = true)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully retrieved")
-    })
-    @GetMapping
-    public ResponseEntity<List<Club>> getAllClubs() {
-        return clubService.getAllClubs();
-    }
 
     @Operation(summary = "get an club  by id", description = "returns an club per the id")
     @ApiResponses(value = {
@@ -96,8 +87,11 @@ public class ClubController {
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
     @GetMapping("{club_id}/members")
-    public ResponseEntity<List<Student>> getClubMembers(@PathVariable("club_id") Integer id) {
-        return clubService.getClubMembers(id);
+    public ResponseEntity<List<Student>> getClubMembers(
+            @PathVariable("club_id") Integer id,
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size) {
+        return clubService.getClubMembers(id,pageNumber,size);
     }
 
 
@@ -162,15 +156,56 @@ public class ClubController {
         return clubService.getClubsPage(pageNumber, size);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Club>> getClubsPageable(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size,
+            @RequestParam(name = "search", required = false) String searchKeyWord
+    ) {
+        if (searchKeyWord != null)
+            return clubService.getCubsPageBySearch(searchKeyWord, pageNumber, size);
+        else
+            return clubService.getClubsPage(pageNumber, size);
+
+    }
+
+
+    @Operation(summary = "get a page of Clubs with extra details", description = "returns a specific page of clubs with the specified number of lines")
+
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
+    })
+    @GetMapping("/detailed")
+    public ResponseEntity<List<ClubDetails>> getClubsDetailsPageable(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size
+    ) {
+
+        return clubDetailsService.getClubsDetailsPage(pageNumber, size);
+
+    }
+
     @PostMapping("/{club_id}/members")
     public ResponseEntity<String> batchAddClubs(@RequestParam("file") MultipartFile file, @PathVariable("club_id") Integer id) throws IOException {
         return ResponseEntity.ok(clubService.addMembersFromFile(file, id));
     }
 
-    @GetMapping("/test")
-    public void test(HttpServletResponse response) {
-        clubService.getClubMembersFile(4,response);
+    @GetMapping("/{club_id}/members/file")
+    public void getClubMembersFile(@PathVariable("club_id") Integer id, HttpServletResponse response) {
+
+        clubService.getClubMembersFile(id, response);
     }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<Club>> getPendingClubs() {
+        return clubService.getPendingClubs();
+    }
+
 
     public record NewClubRequest(
             String name,
@@ -187,9 +222,7 @@ public class ClubController {
             String description,
             String email,
             String phone,
-            String aboutUs,
-            List<String> socials,
-            List<String> medias
+            String aboutUs
 
     ) {
     }

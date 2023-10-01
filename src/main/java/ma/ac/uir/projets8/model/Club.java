@@ -59,6 +59,8 @@ public class Club {
 
     private ClubStatus status;
 
+    //TODO: add featured boolean (za3ma wach pushed to the home page or not)
+
     @ManyToOne
     @JoinColumn(name = "id_supervisor")
     private Personnel supervisor;
@@ -69,10 +71,10 @@ public class Club {
     private ClubDetails clubDetails;
 
     @JsonIgnore
-    @ManyToMany
+    @OneToMany(mappedBy = "organisateur",fetch = FetchType.LAZY)
     private Set<Event> events;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER,mappedBy = "sender")
     private Set<Document> documents;
 
 

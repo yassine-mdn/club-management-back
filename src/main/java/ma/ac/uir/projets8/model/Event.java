@@ -38,13 +38,9 @@ public class Event {
     @OneToMany(mappedBy = "event")
     private Set<Transaction> transcations;
 
-    @ManyToMany
-    @JoinTable(
-            name = "event_club",
-            joinColumns = @JoinColumn(name = "id_event"),
-            inverseJoinColumns = @JoinColumn(name = "id_club")
-    )
-    private Set<Club> organisateurs;
+    @ManyToOne
+    @JoinColumn(name = "club_id",nullable = true)
+    private Club organisateur;
 
     private Date date;
 
@@ -57,6 +53,8 @@ public class Event {
     )
     private Set<Account> participants;
 
+    private String cover;
+
     private EventStatus status;
     public void addTransactions(List<Transaction> transactions) {
         for (Transaction transaction : transactions) {
@@ -65,6 +63,7 @@ public class Event {
 
         }
     }
+
 
 
 }

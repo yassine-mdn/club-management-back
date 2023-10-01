@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.Document;
+import ma.ac.uir.projets8.repository.DocumentRepository;
 import ma.ac.uir.projets8.service.ClubService;
 import ma.ac.uir.projets8.service.DocumentService;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final DocumentRepository documentRepository;
     private final ClubService clubService;
 
 
@@ -47,8 +49,9 @@ public class DocumentController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getDocumentById(@PathVariable Long id) throws IOException {
         byte[] document = documentService.downloadDocument(id);
+        Optional<Document> doc = documentRepository.findById(id);
         return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.valueOf("image/png"))
+                .contentType(MediaType.valueOf(doc.get().getType()))
                 .body(document);
     }
 
