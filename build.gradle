@@ -63,6 +63,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.1.0'
     implementation 'org.dhatim:fastexcel:0.15.4'
     implementation 'org.dhatim:fastexcel-reader:0.15.4'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
@@ -73,6 +74,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 }
 
