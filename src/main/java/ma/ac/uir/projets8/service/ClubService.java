@@ -86,6 +86,7 @@ public class ClubService {
         }
     }
 
+    //TODO: hadi 9essemha 3la plusieurs methodes
     @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
     public ResponseEntity<String> updateClub(Integer id, NewClubRequest request) {
         clubRepository.findById(id).map(club -> {
@@ -104,6 +105,16 @@ public class ClubService {
         ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
         return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
     }
+
+    // TODO: staus change khassou ykoun bou7dou ou koula wa7ed 9der ymudifier ghir les clubs li ta7tou
+
+    //TODO: add service for club president to make a president change request (email ytsafet l admin)
+    //gha tgeneri email fih lien (za3ma end point) l admin bach yaccepti l request
+
+
+    //TODO add service for club president to make a club name change request (email ytsafet l admin)
+    //gha tgeneri email fih lien (za3ma end point) l admin bach yaccepti l request
+
 
     @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
     public ResponseEntity<String> deleteClub(Integer id) {
