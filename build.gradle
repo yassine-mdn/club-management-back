@@ -55,15 +55,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.3.0'
     //TODO: remove all azure and microsoft related services
-    implementation 'com.microsoft.graph:microsoft-graph:5.55.0'
-    implementation 'com.azure.spring:spring-cloud-azure-starter-active-directory:5.1.0'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.1.0'
-    implementation 'org.springframework.security:spring-security-oauth2-jose:6.1.0'
-    implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.1.0'
     implementation 'org.dhatim:fastexcel:0.15.4'
     implementation 'org.dhatim:fastexcel-reader:0.15.4'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    testImplementation 'org.projectlombok:lombok:1.18.26'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
@@ -75,7 +73,8 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
+    testCompileOnly 'org.projectlombok:lombok:1.18.26'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
 
 tasks.named('test') {
