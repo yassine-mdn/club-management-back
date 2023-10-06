@@ -47,11 +47,11 @@ public class Club {
             joinColumns =@JoinColumn(name = "id_culb"),
             inverseJoinColumns = @JoinColumn(name = "id_member")
     )
-    private Set<Student> members = new HashSet<>();
+    private Set<Student> members;
 
 
     @OneToMany(mappedBy = "mangedClub")
-    private Set<Student> committeeMembers = new HashSet<>();
+    private Set<Student> committeeMembers;
 
     private String description;
 
