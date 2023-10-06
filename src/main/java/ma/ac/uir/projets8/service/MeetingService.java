@@ -38,6 +38,10 @@ public class MeetingService {
         return ResponseEntity.ok(meetingRepository.findAll());
     }
 
+    //TODO: send meeting reminder email to participants and organisers 1 day before the meeting date and one hour before
+
+    //TODO : send email to participants and organiser with meeting details upon creation
+
     public ResponseEntity<String> addMeeting(@RequestBody MeetingController.NewMeetingRequest request) {
 
         if (NullChecker.hasNull(request))
@@ -53,6 +57,7 @@ public class MeetingService {
         return new ResponseEntity<>("Meeting successfully created", HttpStatus.CREATED);
     }
 
+
     public ResponseEntity<Meeting> getMeetingById(Integer id) {
 
         try {
@@ -61,6 +66,8 @@ public class MeetingService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
+
+    //TODO : send email to participants and organiser with meeting details upon update
 
     public ResponseEntity<String>  updateMeeting(Integer id, MeetingController.NewMeetingRequest request) {
 
@@ -103,6 +110,8 @@ public class MeetingService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
+
+    //TODO : send email to participants and organiser with meeting details upon deletion
 
     public ResponseEntity<String> deleteMeeting(Integer id) {
 
