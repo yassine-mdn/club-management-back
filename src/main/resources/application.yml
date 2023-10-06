@@ -36,3 +36,10 @@ spring:
             required: true
           ssl:
             trust: ${EMAIL_HOST}
+application:
+  security:
+    jwt:
+        secret-key: ${JWT_SECRET}
+        expiration: ${JWT_EXPIRATION}
+        refresh-token:
+            expiration: ${JWT_REFRESH_EXPIRATION}
