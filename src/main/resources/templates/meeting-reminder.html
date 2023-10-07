@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title th:text="${'Rappel de Réunion Automatisé pour le' + #dates.format(date, 'dd-MM-yyyy HH:mm')}"></title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+
+    <!-- use the font -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+<p th:text="${'Cher(e) ' + name}"></p>
+
+<p th:text="${'Ceci est un rappel automatisé de notre prochaine réunion, prévue pour '+
+#dates.format(date, 'dd-MM-yyyy') + ' à ' + #dates.format(date,'HH:mm')+ '. Votre présence est essentielle pour discuter'
++title+'.'}"></p>
+<br/>
+Voici les détails :
+<br/>
+<p th:text="${'Date : '+#dates.format(date, 'dd-MM-yyyy')}"></p>
+<p th:text="${'Heure : '+#dates.format(date,'HH:mm')}"></p>
+<p th:text="${'Lieu : '+location}"></p>
+<p th:text="${'durré : '+length+ 'minutes'}"></p>
+<p th:text="${'details : '+description}"></p>
+</p>
+
+<p>
+    Un ordre du jour détaillé sera envoyé ultérieurement.
+    Veuillez noter cette date dans votre calendrier et préparez
+    les documents nécessaires pour notre discussion.
+</p>
+
+<p>
+    Merci de votre coopération.
+    <br/><br/>
+    Cordialement, <br/>
+    <em th:text="${sign}"></em>
+</p>
+<p>
+
+    <a href="https://medium.com/@nuwanthafernando95">
+        <img src="https://www.uir.ac.ma/assets/_resources/img/logos/logo-color.png"
+             alt="htts://javabydeveloper.com" height="260" width="302"/>
+    </a>
+</p>
+</body>
+</html>
