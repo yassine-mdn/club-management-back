@@ -30,7 +30,7 @@ public class Student extends Account{
     private Club mangedClub;
 
     @Column(unique = true)
-    private Integer studentId;
+    private Integer studentId; // Hiya numero etudiant
 
 
 }

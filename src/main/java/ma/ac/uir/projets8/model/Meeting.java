@@ -26,11 +26,12 @@ public class Meeting {
             strategy = GenerationType.SEQUENCE,
             generator = "meeting_id_sequence"
     )
-    private Integer idR;
+    private Integer idM;
 
     private Date date;
     private String title;
     private String description;
+    private String location;
     private Integer lengthInMinutes;
 
     @ManyToOne
