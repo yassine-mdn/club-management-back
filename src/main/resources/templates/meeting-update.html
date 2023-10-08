@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title th:text="${'Rappel de Réunion Automatisé pour le' + #dates.format(date, 'dd-MM-yyyy HH:mm')}"></title>
+    <title th:text="${'Mise à Jour des Détails de la Réunion ' + #dates.format(date, 'dd-MM-yyyy HH:mm')}"></title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -20,28 +20,30 @@
 <body>
 <p th:text="${'Cher(e) ' + name}"></p>
 
-<p th:text="${'Ceci est un rappel automatisé de notre prochaine réunion, prévue pour '+
-#dates.format(date, 'dd-MM-yyyy') + ' à ' + #dates.format(date,'HH:mm')+ '. Votre présence est essentielle pour discuter de '
-+title+'.'}"></p>
+<p th:text="${'Nous souhaitons vous informer que les détails de notre réunion prévue pour '+
+#dates.format(date, 'dd-MM-yyyy') + ' à ' + #dates.format(date,'HH:mm')+
+' ont été mis à jour. Voici les nouvelles informations :'}"></p>
 <br/>
 Voici les détails :
 <br/>
 <p th:text="${'Date : '+#dates.format(date, 'dd-MM-yyyy')}"></p>
 <p th:text="${'Heure : '+#dates.format(date,'HH:mm')}"></p>
 <p th:text="${'Lieu : '+location}"></p>
-<p th:text="${'durré : '+length+ ' minutes'}"></p>
-<p th:text="${'details : '+description}"></p>
 </p>
 
 <p>
-    Veuillez noter cette date dans votre calendrier et préparez
-    les documents nécessaires pour notre discussion.
+    Veuillez prendre note de ces modifications dans votre calendrier.
+    Si ces changements affectent votre disponibilité,
+    veuillez nous en informer dès que possible.
 </p>
 
+<p>
+    Nous nous excusons pour tout inconvénient que cela pourrait causer et vous remercions de votre compréhension.
+</p>
 <p>
     Merci de votre coopération.
     <br/><br/>
-    Cordialement, UIR clubs<br/>
+    Cordialement, UIR clubs <br/>
 </p>
 <p>
     <img src="https://www.uir.ac.ma/assets/_resources/img/logos/logo-color.png"

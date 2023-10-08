@@ -40,7 +40,7 @@ public class Meeting {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "participant",
+            name = "meeting_participant",
             joinColumns =@JoinColumn(name = "id_meeting"),
             inverseJoinColumns = @JoinColumn(name = "id_participant")
     )
