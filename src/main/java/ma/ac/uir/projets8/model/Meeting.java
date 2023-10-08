@@ -26,11 +26,12 @@ public class Meeting {
             strategy = GenerationType.SEQUENCE,
             generator = "meeting_id_sequence"
     )
-    private Integer idR;
+    private Integer idM;
 
     private Date date;
     private String title;
     private String description;
+    private String location;
     private Integer lengthInMinutes;
 
     @ManyToOne
@@ -39,7 +40,7 @@ public class Meeting {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "participant",
+            name = "meeting_participant",
             joinColumns =@JoinColumn(name = "id_meeting"),
             inverseJoinColumns = @JoinColumn(name = "id_participant")
     )

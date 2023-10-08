@@ -129,6 +129,8 @@ public class MeetingController {
             String description,
             Integer lengthInMinutes,
             Integer organiserId,
+
+            String location,
             List<Integer> participantsIds
     ) {
     }
