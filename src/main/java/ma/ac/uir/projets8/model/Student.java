@@ -14,7 +14,6 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 public class Student extends Account{
-    //TODO : Add a Set of clubs
 
     @JsonIgnore
     @ManyToMany(mappedBy = "participants")
@@ -31,6 +30,10 @@ public class Student extends Account{
 
     @Column(unique = true)
     private Integer studentId; // Hiya numero etudiant
+
+    private String major;
+
+    private Integer level;
 
 
 }

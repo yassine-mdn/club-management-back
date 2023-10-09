@@ -42,6 +42,8 @@ public class StudentService {
         student.setFirstName(request.firstName());
         student.setEmail(request.email());
         student.setPassword(request.password());
+        student.setMajor(request.major());
+        student.setLevel(request.level());
         if (request.role() == null)
             student.setRoles(List.of(STUDENT));
         else
@@ -71,6 +73,10 @@ public class StudentService {
                                 student.setPassword(request.password());
                             if (request.role() != null)
                                 student.setRoles(List.of(STUDENT, request.role()));
+                            if(!request.major().isEmpty())
+                                student.setMajor(request.major());
+                            if(request.level() != null)
+                                student.setLevel(request.level());
                             return studentRepository.save(student);
                         }
                 ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage()));
