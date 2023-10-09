@@ -39,16 +39,6 @@ public class StudentController {
         return studentService.addStudent(request);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "get All Students", description = "returns all the student accounts ", deprecated = true)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully retrieved")
-    })
-    @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
-
-        return studentService.getAllStudents();
-    }
 
     @Operation(summary = "get an student account by id", description = "returns an student account per the id")
     @ApiResponses(value = {
@@ -95,10 +85,10 @@ public class StudentController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
-    @GetMapping("/page={pageNumber}/size={size}")
+    @GetMapping()
     public ResponseEntity<List<Student>> getStudentsPageable(
-            @PathVariable Integer pageNumber,
-            @PathVariable Integer size
+            @RequestParam Integer pageNumber,
+            @RequestParam  Integer size
     ) {
 
         return studentService.getStudentsPage(pageNumber, size);
@@ -110,6 +100,8 @@ public class StudentController {
             String firstName,
             String email,
             String password,
+            String major,
+            Integer level,
             Role role
     ) {
     }
