@@ -10,6 +10,7 @@ import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
 import ma.ac.uir.projets8.model.enums.EventStatus;
+import ma.ac.uir.projets8.model.enums.Role;
 import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
 import ma.ac.uir.projets8.repository.PersonnelRepository;
@@ -49,12 +50,14 @@ public class ClubService {
 
     private final PersonnelRepository personnelRepository;
 
+    private final AuthenticatedDetailsService authenticatedDetailsService;
+
     public ResponseEntity<List<Club>> getAllClubs() {
 
         return ResponseEntity.ok(clubRepository.findAll());
     }
 
-    @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
+    @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
     public ResponseEntity<String> addClub(NewClubRequest request) {
 
         if (!ObjectUtils.allNotNull(request.name(), request.description(), request.committeeIds()))
@@ -87,10 +90,10 @@ public class ClubService {
     }
 
     //TODO: hadi 9essemha 3la plusieurs methodes
-    @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
+    @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
     public ResponseEntity<String> updateClub(Integer id, NewClubRequest request) {
         clubRepository.findById(id).map(club -> {
-                    if (request.name() != null )
+                    if (request.name() != null)
                         club.setName(request.name());
                     if (request.description() != null)
                         club.setDescription(request.description());
@@ -98,15 +101,25 @@ public class ClubService {
                         club.addCommitteeMembers(studentRepository.findAllById(request.committeeIds()));
                     if (request.supervisorId() != null)
                         club.addSupervisor(personnelRepository.findById(request.supervisorId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid supervisor id request")));
-                    if (request.status() != null)
-                        club.setStatus(request.status());
                     return clubRepository.save(club);
                 }
         ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
         return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
     }
 
-    // TODO: staus change khassou ykoun bou7dou ou koula wa7ed 9der ymudifier ghir les clubs li ta7tou
+    public ResponseEntity<String> updateClubStatus(Integer id, ClubStatus status) {
+
+        Account account = authenticatedDetailsService.getAuthenticatedAccount();
+
+        clubRepository.findById(id).map(club -> {
+                    if (club.getType().equals(ClubType.ACADEMIC) || !Objects.equals(club.getSupervisor().getIdA(), account.getIdA()))
+                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not allowed to change this club status");
+                    club.setStatus(status);
+                    return clubRepository.save(club);
+                }
+        ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
+        return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
+    }
 
     //TODO: add service for club president to make a president change request (email ytsafet l admin)
     //gha tgeneri email fih lien (za3ma end point) l admin bach yaccepti l request
@@ -116,7 +129,7 @@ public class ClubService {
     //gha tgeneri email fih lien (za3ma end point) l admin bach yaccepti l request
 
 
-    @CacheEvict(value = {"clubs","clubsDetails"}, allEntries = true)
+    @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
     public ResponseEntity<String> deleteClub(Integer id) {
 
         try {
@@ -142,12 +155,12 @@ public class ClubService {
         }
     }
 
-    public ResponseEntity<List<Student>> getClubMembers(Integer id,Integer pageNumber, Integer size) {
+    public ResponseEntity<List<Student>> getClubMembers(Integer id, Integer pageNumber, Integer size) {
 
         Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
         if (pageNumber < 0 || size < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Student> resultPage = studentRepository.findAllByJoinedClubs(club,PageRequest.of(pageNumber, size));
+        Page<Student> resultPage = studentRepository.findAllByJoinedClubs(club, PageRequest.of(pageNumber, size));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
@@ -161,7 +174,7 @@ public class ClubService {
 
         try {
             Club temp = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
-            return ResponseEntity.ok(new ArrayList<>(eventRepository.findAllByOrganisateurAndStatusIn(temp,List.of(EventStatus.REQUESTED, EventStatus.APPROVED))));
+            return ResponseEntity.ok(new ArrayList<>(eventRepository.findAllByOrganisateurAndStatusIn(temp, List.of(EventStatus.REQUESTED, EventStatus.APPROVED))));
         } catch (ClubNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
@@ -280,8 +293,8 @@ public class ClubService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Club>> getPendingClubs(){
-        List<Club> c =clubRepository.findAllByStatusIn(List.of(ClubStatus.CREATION_STEP_2,ClubStatus.CREATION_STEP_1,ClubStatus.CREATION_STEP_3));
+    public ResponseEntity<List<Club>> getPendingClubs() {
+        List<Club> c = clubRepository.findAllByStatusIn(List.of(ClubStatus.CREATION_STEP_2, ClubStatus.CREATION_STEP_1, ClubStatus.CREATION_STEP_3));
         System.out.println(c);
         return ResponseEntity.of(Optional.ofNullable(c));
     }
