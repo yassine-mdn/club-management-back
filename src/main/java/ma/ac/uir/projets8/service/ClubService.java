@@ -129,6 +129,21 @@ public class ClubService {
     //gha tgeneri email fih lien (za3ma end point) l admin bach yaccepti l request
 
 
+    public ResponseEntity<String> abandonClub(Integer id) {
+        clubRepository.findById(id).map(club -> {
+                    club.setStatus(ClubStatus.ABANDONED);
+                    club.setMembers(new HashSet<>());
+                    club.getCommitteeMembers().forEach(student -> {
+                        student.setMangedClub(null);
+                        student.setRoles(List.of(Role.STUDENT));
+                        studentRepository.save(student);
+                    });
+                    return clubRepository.save(club);
+                }
+        ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
+        return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
+    }
+
     @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
     public ResponseEntity<String> deleteClub(Integer id) {
 

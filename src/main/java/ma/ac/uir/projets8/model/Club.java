@@ -66,7 +66,7 @@ public class Club {
     private Personnel supervisor;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "club",cascade = CascadeType.ALL,fetch = FetchType.LAZY,optional = false)
+    @OneToOne(mappedBy = "club",cascade = CascadeType.ALL,fetch = FetchType.EAGER,optional = false)
     @PrimaryKeyJoinColumn
     private ClubDetails clubDetails;
 
