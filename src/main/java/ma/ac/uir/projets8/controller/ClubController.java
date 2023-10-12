@@ -91,7 +91,7 @@ public class ClubController {
             @PathVariable("club_id") Integer id,
             @RequestParam(name = "pageNumber") Integer pageNumber,
             @RequestParam(name = "pageSize") Integer size) {
-        return clubService.getClubMembers(id,pageNumber,size);
+        return clubService.getClubMembers(id, pageNumber, size);
     }
 
 
@@ -138,7 +138,7 @@ public class ClubController {
         return clubService.deleteClub(id);
     }
 
-    @Operation(summary = "get a page of Clubs", description = "returns a specific page of clubs with the specified number of lines")
+    @Operation(summary = "get a page of Clubs with keyword search", description = "returns a specific page of clubs with the specified number of lines")
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",
@@ -148,14 +148,6 @@ public class ClubController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
-    @GetMapping("/page={pageNumber}/size={size}")
-    public ResponseEntity<List<Club>> getClubsPageable(
-            @PathVariable Integer pageNumber,
-            @PathVariable Integer size
-    ) {
-        return clubService.getClubsPage(pageNumber, size);
-    }
-
     @GetMapping
     public ResponseEntity<List<Club>> getClubsPageable(
             @RequestParam(name = "pageNumber") Integer pageNumber,
@@ -190,29 +182,60 @@ public class ClubController {
 
     }
 
+    @Deprecated
     @PostMapping("/{club_id}/members")
     public ResponseEntity<String> batchAddClubs(@RequestParam("file") MultipartFile file, @PathVariable("club_id") Integer id) throws IOException {
         return ResponseEntity.ok(clubService.addMembersFromFile(file, id));
     }
 
+    @Operation(summary = "get all members of a club bundled in and excel file", description = "get club members in an excel file")
     @GetMapping("/{club_id}/members/file")
     public void getClubMembersFile(@PathVariable("club_id") Integer id, HttpServletResponse response) {
 
         clubService.getClubMembersFile(id, response);
     }
 
+    @Operation(summary = "get a page of pending clubs", description = "returns a specific page of pending clubs with the specified number of lines")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
+    })
     @GetMapping("/pending")
-    public ResponseEntity<List<Club>> getPendingClubs() {
-        return clubService.getPendingClubs();
+    public ResponseEntity<List<Club>> getPendingClubs(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size) {
+        return clubService.getPendingClubs(pageNumber, size);
     }
 
+
+    @Operation(summary = "get a page of featured clubs", description = "returns a specific page of featured clubs with the specified number of lines")
+
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
+    })
+    @GetMapping("/featured")
+    public ResponseEntity<List<Club>> getFeaturedClubs(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer size) {
+        return clubService.getFeaturedClubs(pageNumber, size);
+    }
 
     public record NewClubRequest(
             String name,
             String description,
             Integer supervisorId,//Nullable
             Set<Integer> committeeIds,
-            ClubStatus status
+            ClubStatus status,
+            Boolean featured
     ) {
     }
 

@@ -8,9 +8,8 @@ import lombok.Setter;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -59,7 +58,10 @@ public class Club {
 
     private ClubStatus status;
 
-    //TODO: add featured boolean (za3ma wach pushed to the home page or not)
+    private Boolean featured;
+
+    @JsonIgnore
+    private Instant creationDate;
 
     @ManyToOne
     @JoinColumn(name = "id_supervisor")
@@ -80,6 +82,7 @@ public class Club {
 
     @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER,optional = false)
     private Budget budget;
+
 
     public void addMember(List<Student> students){
         for (Student student : students) {

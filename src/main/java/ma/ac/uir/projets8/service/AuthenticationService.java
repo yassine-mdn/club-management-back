@@ -62,7 +62,7 @@ public class AuthenticationService {
         }
         refreshToken = authHeader.substring(7);
         userEmail = jwtService.extractUsername(refreshToken);
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (userEmail != null) {
             UserDetails userDetails = this.repository.findByEmail(userEmail).orElseThrow();
             if (jwtService.isTokenValid(refreshToken , userDetails)) {
                 var jwtToken = jwtService.generateToken(userDetails);
