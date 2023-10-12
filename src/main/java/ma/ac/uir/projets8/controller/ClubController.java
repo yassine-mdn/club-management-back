@@ -195,6 +195,7 @@ public class ClubController {
     }
 
     @Operation(summary = "get all members of a club bundled in and excel file", description = "get club members in an excel file")
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @GetMapping("/{club_id}/members/file")
     public void getClubMembersFile(@PathVariable("club_id") Integer id, HttpServletResponse response) {
 
