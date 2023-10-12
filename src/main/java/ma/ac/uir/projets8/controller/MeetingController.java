@@ -13,6 +13,7 @@ import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.repository.MeetingRepository;
 import ma.ac.uir.projets8.service.MeetingService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -33,6 +34,7 @@ public class MeetingController {
             @ApiResponse(responseCode = "400", description = "Invalid request"),
             @ApiResponse(responseCode = "406", description = "Email already exists")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @PostMapping
     public ResponseEntity<String> addMeeting(@RequestBody NewMeetingRequest request) {
         
@@ -87,6 +89,7 @@ public class MeetingController {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @PutMapping("{meeting_id}")
     public ResponseEntity<String> updateMeeting(@PathVariable("meeting_id") Integer id, @RequestBody NewMeetingRequest request) {
        
@@ -98,6 +101,7 @@ public class MeetingController {
             @ApiResponse(responseCode = "200", description = "meeting deleted"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @DeleteMapping("{meeting_id}")
     public ResponseEntity<String> deleteMeeting(@PathVariable("meeting_id") Integer id){
         
@@ -114,8 +118,8 @@ public class MeetingController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @GetMapping("/page={pageNumber}/size={size}")
-    @ApiResponse(headers = {@Header(name = "total-pages",description = "the total number of pages",schema = @Schema(type = "string"))})
     public ResponseEntity<List<Meeting>> getMeetingsPageable(
             @PathVariable Integer pageNumber,
             @PathVariable Integer size

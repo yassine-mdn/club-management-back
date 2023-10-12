@@ -15,6 +15,7 @@ import ma.ac.uir.projets8.service.DocumentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +37,7 @@ public class DocumentController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<Document>> getAllDocuments() {
         return ResponseEntity.ok(documentService.getAllDocuments());
@@ -46,6 +48,7 @@ public class DocumentController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Document not found")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER','SECRETARY')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getDocumentById(@PathVariable Long id) throws IOException {
         byte[] document = documentService.downloadDocument(id);
@@ -55,6 +58,7 @@ public class DocumentController {
                 .body(document);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER','SECRETARY')")
     @PostMapping("/send/src/{club_id}")
     public ResponseEntity<?> sendDocument(@PathVariable("club_id") Integer club_id, @RequestParam("file") MultipartFile file) throws IOException {
         Club sender = clubService.getClubById(club_id).getBody();

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -32,6 +33,7 @@ public class EventController {
             @ApiResponse(responseCode = "201", description = "Event successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
     @PostMapping
     public ResponseEntity<Event> createEvent(@RequestBody NewEventRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request));
@@ -45,11 +47,7 @@ public class EventController {
     @GetMapping("/{id}")
     public ResponseEntity<Event> getEventById(@PathVariable Long id) {
         Optional<Event> optionalEvent = eventService.getEventById(id);
-        if (optionalEvent.isPresent()) {
-            return ResponseEntity.ok(optionalEvent.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return optionalEvent.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Update an event by ID")
@@ -58,6 +56,7 @@ public class EventController {
             @ApiResponse(responseCode = "404", description = "Event not found"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
     @PutMapping("/{id}")
     public ResponseEntity<Event> updateEvent(@PathVariable Long id, @RequestBody NewEventRequest request) {
         return ResponseEntity.ok(eventService.updateEvent(id,request));
@@ -68,6 +67,7 @@ public class EventController {
             @ApiResponse(responseCode = "204", description = "Successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Event not found")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
         eventService.deleteEvent(id);
@@ -79,6 +79,7 @@ public class EventController {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER')")
     @GetMapping("{event_id}/transactions")
     public ResponseEntity<List<Transaction>> getTransactionsByBudget(@PathVariable("event_id") Long id) {
         return eventService.getTransactionsByEvent(id);
@@ -89,13 +90,14 @@ public class EventController {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
     @GetMapping("{event_id}/participants")
     public ResponseEntity<List<Account>> getParticipantsByEvent(@PathVariable("event_id") Long id) {
         return eventService.getParticipantsByEvent(id);
     }
 
     @GetMapping()
-    public ResponseEntity<List<Event>> getClubsDetailsPageable(
+    public ResponseEntity<List<Event>> getEventsPageable(
             @RequestParam(name = "pageNumber") Integer pageNumber,
             @RequestParam(name = "pageSize") Integer size
     ) {

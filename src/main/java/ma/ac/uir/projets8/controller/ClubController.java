@@ -18,6 +18,7 @@ import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.service.ClubDetailsService;
 import ma.ac.uir.projets8.service.ClubService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,7 +37,7 @@ public class ClubController {
     private final ClubDetailsService clubDetailsService;
 
 
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','STUDENT')")
     @PostMapping
     @Operation(summary = "create a new Club", description = "adds an club to the database")
     @ApiResponses(value = {
@@ -86,6 +87,7 @@ public class ClubController {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @GetMapping("{club_id}/members")
     public ResponseEntity<List<Student>> getClubMembers(
             @PathVariable("club_id") Integer id,
@@ -99,17 +101,19 @@ public class ClubController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Club>> getAllClubsWithStatus(@PathVariable("status") ClubStatus status) {
         return clubService.getClubsByStatus(status);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "update a club by id", description = "updates the club with the specified id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @PutMapping("{club_id}")
     public ResponseEntity<String> updateClub(@PathVariable("club_id") Integer id, @RequestBody NewClubRequest request) {
         return clubService.updateClub(id, request);
@@ -120,6 +124,7 @@ public class ClubController {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @PutMapping("{club_id}/details")
     public ResponseEntity<String> updateClubDetails(@PathVariable("club_id") Integer id, @RequestBody NewClubDetailsRequest request) {
         return clubDetailsService.updateClub(id, request);
@@ -132,6 +137,7 @@ public class ClubController {
             @ApiResponse(responseCode = "200", description = "deleted updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @DeleteMapping("{club_id}")
     public ResponseEntity<String> deleteClub(@PathVariable("club_id") Integer id) {
 
@@ -204,6 +210,7 @@ public class ClubController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @GetMapping("/pending")
     public ResponseEntity<List<Club>> getPendingClubs(
             @RequestParam(name = "pageNumber") Integer pageNumber,

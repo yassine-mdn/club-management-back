@@ -13,6 +13,7 @@ import ma.ac.uir.projets8.model.enums.Role;
 import ma.ac.uir.projets8.repository.PersonnelRepository;
 import ma.ac.uir.projets8.service.PersonnelService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -86,6 +87,7 @@ public class PersonnelController {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasRole('PROF')")
     @GetMapping("{personnel_id}/clubs")
     public ResponseEntity<List<Club>> getManagedClubs(@PathVariable("personnel_id") Integer id) {
         return personnelService.getClubsByPersonnelId(id);
@@ -101,6 +103,7 @@ public class PersonnelController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/page={pageNumber}/size={size}")
     public ResponseEntity<List<Personnel>> getPersonnelsPageable(
             @PathVariable Integer pageNumber,

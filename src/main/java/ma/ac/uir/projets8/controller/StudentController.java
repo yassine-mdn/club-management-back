@@ -13,6 +13,7 @@ import ma.ac.uir.projets8.repository.StudentRepository;
 import ma.ac.uir.projets8.service.StudentService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +27,6 @@ public class StudentController {
     private final StudentService studentService;
 
 
-    //@PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "create a new Student", description = "adds a student account to the database")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Student account successfully created"),
@@ -63,7 +63,6 @@ public class StudentController {
         studentService.updateStudent(id, request);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "delete an account with id", description = "delete the student account with the specified id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "deleted updated"),
