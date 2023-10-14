@@ -28,8 +28,11 @@ public class SecurityConfig {
             "/api/v1/clubs",
             "/api/v1/clubs/featured",
             "/api/v1/clubs/{club_id}",
+            "/api/v1/clubs/{club_id}/details",
             "/api/v1/clubs/{club_id}/events",
-
+            "/api/v1/clubs/detailed",
+            "api/v1/events/{id}",
+            "api/v1/events",
     };
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -43,6 +46,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers(HttpMethod.GET,publicEndpoints)
                 .permitAll()
+                .and()
+                .authorizeHttpRequests()
                 .requestMatchers("/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**")
                 .permitAll()
                 .anyRequest()

@@ -51,7 +51,7 @@ public class MeetingController {
         return meetingService.getAllMeetings();
     }
 
-    @Operation(summary = "get an meeting account by id", description = "returns an meeting per the id")
+    @Operation(summary = "get an meeting by id", description = "returns an meeting per the id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
