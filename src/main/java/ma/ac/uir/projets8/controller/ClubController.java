@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Club;
@@ -18,6 +19,7 @@ import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.service.ClubDetailsService;
 import ma.ac.uir.projets8.service.ClubService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,18 +38,18 @@ public class ClubController {
     private final ClubDetailsService clubDetailsService;
 
 
-    //@PreAuthorize("hasRole('ADMIN')")
+
     @PostMapping
-    @Operation(summary = "create a new Club", description = "adds an club to the database")
+    @Operation(summary = "create a new Club", description = "adds an club to the database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Club successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid request"),
             @ApiResponse(responseCode = "406", description = "Email already exists")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','STUDENT')")
     public ResponseEntity<String> addClub(@RequestBody ClubController.NewClubRequest request) {
         return clubService.addClub(request);
     }
-
 
     @Operation(summary = "get an club  by id", description = "returns an club per the id")
     @ApiResponses(value = {
@@ -81,11 +83,12 @@ public class ClubController {
         return clubService.getClubEvents(id);
     }
 
-    @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id")
+    @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @GetMapping("{club_id}/members")
     public ResponseEntity<List<Student>> getClubMembers(
             @PathVariable("club_id") Integer id,
@@ -95,43 +98,45 @@ public class ClubController {
     }
 
 
-    @Operation(summary = "get All Clubs with specified status", description = "returns all the club with specified status ")
+    @Operation(summary = "get All Clubs with specified status", description = "returns all the club with specified status ", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Club>> getAllClubsWithStatus(@PathVariable("status") ClubStatus status) {
         return clubService.getClubsByStatus(status);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "update a club by id", description = "updates the club with the specified id")
+    @Operation(summary = "update a club by id", description = "updates the club with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @PutMapping("{club_id}")
     public ResponseEntity<String> updateClub(@PathVariable("club_id") Integer id, @RequestBody NewClubRequest request) {
         return clubService.updateClub(id, request);
     }
 
-    @Operation(summary = "update club details by id", description = "updates the club details of the clubwith the specified id")
+    @Operation(summary = "update club details by id", description = "updates the club details of the clubwith the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @PutMapping("{club_id}/details")
     public ResponseEntity<String> updateClubDetails(@PathVariable("club_id") Integer id, @RequestBody NewClubDetailsRequest request) {
         return clubDetailsService.updateClub(id, request);
     }
 
-
-    //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "delete a club with id", description = "delete the club with the specified id")
+    @Operation(summary = "delete a club with id", description = "delete the club with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "deleted updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @DeleteMapping("{club_id}")
     public ResponseEntity<String> deleteClub(@PathVariable("club_id") Integer id) {
 
@@ -189,13 +194,16 @@ public class ClubController {
     }
 
     @Operation(summary = "get all members of a club bundled in and excel file", description = "get club members in an excel file")
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @GetMapping("/{club_id}/members/file")
     public void getClubMembersFile(@PathVariable("club_id") Integer id, HttpServletResponse response) {
 
         clubService.getClubMembersFile(id, response);
     }
 
-    @Operation(summary = "get a page of pending clubs", description = "returns a specific page of pending clubs with the specified number of lines")
+    @Operation(summary = "get a page of pending clubs",
+            description = "returns a specific page of pending clubs with the specified number of lines",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
@@ -204,6 +212,7 @@ public class ClubController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
                     content = @Content(schema = @Schema(implementation = Void.class))),
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @GetMapping("/pending")
     public ResponseEntity<List<Club>> getPendingClubs(
             @RequestParam(name = "pageNumber") Integer pageNumber,
@@ -212,7 +221,9 @@ public class ClubController {
     }
 
 
-    @Operation(summary = "get a page of featured clubs", description = "returns a specific page of featured clubs with the specified number of lines")
+    @Operation(summary = "get a page of featured clubs",
+            description = "returns a specific page of featured clubs with the specified number of lines",
+            security = @SecurityRequirement(name = "bearerAuth"))
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",
