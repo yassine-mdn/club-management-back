@@ -9,12 +9,14 @@ import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Document;
 import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.enums.BudgetType;
 import ma.ac.uir.projets8.service.BudgetService;
 import ma.ac.uir.projets8.service.DocumentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +27,30 @@ public class BudgetController {
 
     private final BudgetService budgetService;
 
+    @Operation(summary = "Create a new Budget")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Budget created successfully"),
+            @ApiResponse(responseCode = "400",description = "Invalid request")
+    })
+    @PostMapping
+    public ResponseEntity<Budget> createBudget(@RequestBody BudgetController.NewBudgetRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(budgetService.createBudget(request));
+    }
 
+
+    //todo: update budget
+    //todo: get budget by id
+    //todo: delete budget
+    //todo: schedule budget update once a year
+
+    public record NewBudgetRequest(
+            BudgetType budgetType,
+            double budget_initial,
+
+            int idClub
+
+    ) {
+    }
 
 }
 
