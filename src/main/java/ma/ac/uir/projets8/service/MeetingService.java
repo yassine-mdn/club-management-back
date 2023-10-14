@@ -16,6 +16,7 @@ import ma.ac.uir.projets8.repository.StudentRepository;
 import ma.ac.uir.projets8.util.NullChecker;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ public class MeetingService {
     private final AccountRepository accountRepository;
     private final StudentRepository studentRepository;
     private final EmailService emailService;
+    private final AuthenticatedDetailsService authenticatedDetailsService;
 
     public ResponseEntity<List<Meeting>> getAllMeetings() {
 
@@ -137,7 +139,6 @@ public class MeetingService {
     }
 
 
-
     public ResponseEntity<String> deleteMeeting(Integer id) {
 
         try {
@@ -189,4 +190,16 @@ public class MeetingService {
     }
 
 
+    public ResponseEntity<List<Meeting>> getMyMeetings(int pageNumber, int pageSize) {
+        Account me = authenticatedDetailsService.getAuthenticatedAccount();
+
+        Page<Meeting> resultPage = meetingRepository.findAllByOrganisedOrParticipated(me.getIdA(),
+                PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "date")));
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
 }

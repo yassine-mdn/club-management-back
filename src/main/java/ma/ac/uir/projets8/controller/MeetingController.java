@@ -64,7 +64,7 @@ public class MeetingController {
         return meetingService.getMeetingById(id);
     }
 
-    @Operation(summary = "get the Organizer of the meeting", description = "returns the organizer account per the meeting id")
+    @Operation(summary = "get the Organizer of the meeting", description = "returns the organizer account per the meeting id", deprecated = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -73,6 +73,27 @@ public class MeetingController {
     public ResponseEntity<Account> getOrganiserByMeetingId(@PathVariable("meeting_id") Integer id){
         
         return meetingService.getMeetingOrganiser(id);
+    }
+
+
+    @Operation(summary = "get a page of the users meetings",
+            description = "returns a specific page of users meetings be it organised or invited to with the specified number of lines",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
+    })
+    @GetMapping("/me")
+    public ResponseEntity<List<Meeting>> getMyMeetings(
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ){
+
+        return meetingService.getMyMeetings(pageNumber,pageSize);
     }
 
     @Operation(summary = "get the participants of the meeting", description = "returns the participants account list per the meeting id",deprecated = true)
