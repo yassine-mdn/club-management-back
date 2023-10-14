@@ -36,4 +36,14 @@ public class BudgetService {
 
         return budgetRepository.save(budget);
     }
+
+    public Budget updateBudgetById(Long id, BudgetController.NewBudgetRequest request){
+        // i assume that budget_restant is automatically updated and shouldn't change by a request
+        // the same goes for transactions
+        Budget budget = budgetRepository.findById(id).orElseThrow(()-> new BudgetNotFoundException(id));
+        budget.setBudget_initial(request.budget_initial());
+        budget.setBudgetType(request.budgetType());
+        budget.setClub(clubRepository.findById(request.idClub()).orElseThrow(()->new ClubNotFoundException(request.idClub())));
+        return budgetRepository.save(budget);
+    }
 }

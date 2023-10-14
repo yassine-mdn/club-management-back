@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Document;
+import ma.ac.uir.projets8.model.Event;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.model.enums.BudgetType;
 import ma.ac.uir.projets8.service.BudgetService;
@@ -37,8 +38,16 @@ public class BudgetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(budgetService.createBudget(request));
     }
 
-
-    //todo: update budget
+    @Operation(summary = "Update budget by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated"),
+            @ApiResponse(responseCode = "404", description = "Budget not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<Budget> updateBudget(@PathVariable Long id, @RequestBody BudgetController.NewBudgetRequest request){
+        return ResponseEntity.ok(budgetService.updateBudgetById(id,request));
+    }
     //todo: get budget by id
     //todo: delete budget
     //todo: schedule budget update once a year
