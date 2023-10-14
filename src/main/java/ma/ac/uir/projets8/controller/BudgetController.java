@@ -48,7 +48,18 @@ public class BudgetController {
     public ResponseEntity<Budget> updateBudget(@PathVariable Long id, @RequestBody BudgetController.NewBudgetRequest request){
         return ResponseEntity.ok(budgetService.updateBudgetById(id,request));
     }
-    //todo: get budget by id
+
+    @Operation(summary = "Get Budget by id ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Budget successfully fetched"),
+            @ApiResponse(responseCode = "404",description = "Budget not found"),
+            @ApiResponse(responseCode = "400",description = "Invalid request")
+    })
+    @GetMapping("/{budget_id}")
+    public ResponseEntity<Budget> getBudgetById(@PathVariable("budget_id") Long id){
+        return ResponseEntity.ok(budgetService.findBudgetById(id));
+    }
+
     //todo: delete budget
     //todo: schedule budget update once a year
 

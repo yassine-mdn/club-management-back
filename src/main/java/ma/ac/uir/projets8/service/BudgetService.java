@@ -46,4 +46,8 @@ public class BudgetService {
         budget.setClub(clubRepository.findById(request.idClub()).orElseThrow(()->new ClubNotFoundException(request.idClub())));
         return budgetRepository.save(budget);
     }
+
+    public Budget findBudgetById(Long id){
+        return budgetRepository.findById(id).orElseThrow(()-> new BudgetNotFoundException(id));
+    }
 }
