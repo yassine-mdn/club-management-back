@@ -68,11 +68,17 @@ public class ClubService {
         club.addCommitteeMembers(studentRepository.findAllById(request.committeeIds()));
         club.setStatus(request.status() == null ? ClubStatus.CREATION_STEP_1 : request.status());
         club.addClubDetails(new ClubDetails());
-        Budget budget = new Budget();
-        budget.setClub(club);
-        budget.setBudget_initial(0.0);
-        budget.setBudget_restant(0.0);
-        club.setBudget(budget);
+
+        // after update, club have set<budget> instead of budget attribute
+        // the budget instance will be created by an admin user
+        // the mapping with the club will be done automatically
+
+//        Budget budget = new Budget();
+//        budget.setClub(club);
+//        budget.setBudget_initial(0.0);
+//        budget.setBudget_restant(0.0);
+//        club.setBudget(budget);
+
         clubRepository.save(club);
         return new ResponseEntity<>("Club successfully added to database", HttpStatus.CREATED);
     }
