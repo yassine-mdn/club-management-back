@@ -17,7 +17,7 @@ public interface ClubRepository extends JpaRepository<Club, Integer> {
 
     Page<Club> findAllByFeatured(Boolean featured, Pageable pageable);
 
-    List<Club> findAllByStatus(ClubStatus status);
+    Page<Club> findAllByStatus(ClubStatus status, Pageable pageable);
 
     Page<Club> findAllByStatusIn(List<ClubStatus> statusList, Pageable pageable);
 }
