@@ -38,7 +38,6 @@ public class ClubController {
     private final ClubDetailsService clubDetailsService;
 
 
-
     @PostMapping
     @Operation(summary = "create a new Club", description = "adds an club to the database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -75,12 +74,20 @@ public class ClubController {
 
     @Operation(summary = "get an club events by id", description = "returns events organized by a club per the id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
-            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
     })
     @GetMapping("{club_id}/events")
-    public ResponseEntity<List<Event>> getClubEvents(@PathVariable("club_id") Integer id) {
-        return clubService.getClubEvents(id);
+    public ResponseEntity<List<Event>> getClubEvents(
+            @PathVariable("club_id") Integer id,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+        return clubService.getClubEvents(id, pageNumber, pageSize);
     }
 
     @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id", security = @SecurityRequirement(name = "bearerAuth"))
@@ -97,16 +104,6 @@ public class ClubController {
         return clubService.getClubMembers(id, pageNumber, size);
     }
 
-
-    @Operation(summary = "get All Clubs with specified status", description = "returns all the club with specified status ", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully retrieved")
-    })
-    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<Club>> getAllClubsWithStatus(@PathVariable("status") ClubStatus status) {
-        return clubService.getClubsByStatus(status);
-    }
 
     @Operation(summary = "update a club by id", description = "updates the club with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -155,15 +152,34 @@ public class ClubController {
     })
     @GetMapping
     public ResponseEntity<List<Club>> getClubsPageable(
-            @RequestParam(name = "pageNumber") Integer pageNumber,
-            @RequestParam(name = "pageSize") Integer size,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize,
             @RequestParam(name = "search", required = false) String searchKeyWord
     ) {
         if (searchKeyWord != null)
-            return clubService.getCubsPageBySearch(searchKeyWord, pageNumber, size);
+            return clubService.getCubsPageBySearch(searchKeyWord, pageNumber, pageSize);
         else
-            return clubService.getClubsPage(pageNumber, size);
+            return clubService.getClubsPage(pageNumber, pageSize);
 
+    }
+
+    @Operation(summary = "get Page Clubs with specified status", description = "returns page of clubs with specified status ", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
+                    }),
+            @ApiResponse(responseCode = "404", description = "invalid page number",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))},
+                    content = @Content(schema = @Schema(implementation = Void.class))),
+    })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF')")
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Club>> getAllClubsWithStatus(
+            @PathVariable("status") ClubStatus status,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+        return clubService.getClubsByStatus(status, pageNumber, pageSize);
     }
 
 
@@ -179,11 +195,11 @@ public class ClubController {
     })
     @GetMapping("/detailed")
     public ResponseEntity<List<ClubDetails>> getClubsDetailsPageable(
-            @RequestParam(name = "pageNumber") Integer pageNumber,
-            @RequestParam(name = "pageSize") Integer size
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
     ) {
 
-        return clubDetailsService.getClubsDetailsPage(pageNumber, size);
+        return clubDetailsService.getClubsDetailsPage(pageNumber, pageSize);
 
     }
 
@@ -215,9 +231,9 @@ public class ClubController {
     @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @GetMapping("/pending")
     public ResponseEntity<List<Club>> getPendingClubs(
-            @RequestParam(name = "pageNumber") Integer pageNumber,
-            @RequestParam(name = "pageSize") Integer size) {
-        return clubService.getPendingClubs(pageNumber, size);
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize) {
+        return clubService.getPendingClubs(pageNumber, pageSize);
     }
 
 
@@ -235,9 +251,9 @@ public class ClubController {
     })
     @GetMapping("/featured")
     public ResponseEntity<List<Club>> getFeaturedClubs(
-            @RequestParam(name = "pageNumber") Integer pageNumber,
-            @RequestParam(name = "pageSize") Integer size) {
-        return clubService.getFeaturedClubs(pageNumber, size);
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize) {
+        return clubService.getFeaturedClubs(pageNumber, pageSize);
     }
 
     public record NewClubRequest(

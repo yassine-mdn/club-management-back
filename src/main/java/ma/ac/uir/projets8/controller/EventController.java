@@ -103,8 +103,8 @@ public class EventController {
 
     @GetMapping()
     public ResponseEntity<List<Event>> getEventsPageable(
-            @RequestParam(name = "pageNumber") Integer pageNumber,
-            @RequestParam(name = "pageSize") Integer size
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer size
     ) {
 
         return eventService.getEventsPage(pageNumber, size);

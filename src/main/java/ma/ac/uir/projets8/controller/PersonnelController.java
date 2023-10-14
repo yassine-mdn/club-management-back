@@ -111,8 +111,8 @@ public class PersonnelController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/page={pageNumber}/size={size}")
     public ResponseEntity<List<Personnel>> getPersonnelsPageable(
-            @PathVariable Integer pageNumber,
-            @PathVariable Integer size
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer size
     ) {
         return personnelService.getPersonnelsPage(pageNumber, size);
     }

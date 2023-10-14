@@ -186,27 +186,37 @@ public class ClubService {
         }
     }
 
-    public ResponseEntity<List<Club>> getClubsByStatus(ClubStatus status) {
-
-        return ResponseEntity.ok(clubRepository.findAllByStatus(status));
-    }
-
-    public ResponseEntity<List<Event>> getClubEvents(Integer id) {
-
-        try {
-            Club temp = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
-            return ResponseEntity.ok(new ArrayList<>(temp.getEvents()));
-        } catch (ClubNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+    public ResponseEntity<List<Club>> getClubsByStatus(ClubStatus status, Integer pageNumber, Integer pageSize) {
+        if (pageNumber < 0 || pageSize < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+        Page<Club> resultPage = clubRepository.findAllByStatus(status, PageRequest.of(pageNumber, pageSize));
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Student>> getClubMembers(Integer id, Integer pageNumber, Integer size) {
+    public ResponseEntity<List<Event>> getClubEvents(Integer id, Integer pageNumber, Integer pageSize) {
+
+        if (pageNumber < 0 || pageSize < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+        Page<Event> resultPage = eventRepository.findAllByOrganisateurIdC(id, PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "date")));
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Student>> getClubMembers(Integer id, Integer pageNumber, Integer pageSize) {
 
         Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
-        if (pageNumber < 0 || size < 0)
+        if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Student> resultPage = studentRepository.findAllByJoinedClubs(club, PageRequest.of(pageNumber, size));
+        Page<Student> resultPage = studentRepository.findAllByJoinedClubs(club, PageRequest.of(pageNumber, pageSize));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
@@ -317,11 +327,11 @@ public class ClubService {
 
 
     @Cacheable(value = "clubs")
-    public ResponseEntity<List<Club>> getClubsPage(Integer pageNumber, Integer size) {
+    public ResponseEntity<List<Club>> getClubsPage(Integer pageNumber, Integer pageSize) {
 
-        if (pageNumber < 0 || size < 0)
+        if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Club> resultPage = clubRepository.findAll(PageRequest.of(pageNumber, size));
+        Page<Club> resultPage = clubRepository.findAll(PageRequest.of(pageNumber, pageSize));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
@@ -331,10 +341,10 @@ public class ClubService {
     }
 
 
-    public ResponseEntity<List<Club>> getCubsPageBySearch(String searchKeyWord, Integer pageNumber, Integer size) {
-        if (pageNumber < 0 || size < 0)
+    public ResponseEntity<List<Club>> getCubsPageBySearch(String searchKeyWord, Integer pageNumber, Integer pageSize) {
+        if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Club> resultPage = clubRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(searchKeyWord, searchKeyWord, PageRequest.of(pageNumber, size));
+        Page<Club> resultPage = clubRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(searchKeyWord, searchKeyWord, PageRequest.of(pageNumber, pageSize));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
@@ -343,12 +353,12 @@ public class ClubService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Club>> getPendingClubs(Integer pageNumber, Integer size) {
-        if (pageNumber < 0 || size < 0)
+    public ResponseEntity<List<Club>> getPendingClubs(Integer pageNumber, Integer pageSize) {
+        if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
         Page<Club> resultPage = clubRepository.findAllByStatusIn(
                 List.of(ClubStatus.CREATION_STEP_2, ClubStatus.CREATION_STEP_1, ClubStatus.CREATION_STEP_3),
-                PageRequest.of(pageNumber, size).withSort(Sort.by(Sort.Direction.DESC, "creationDate")));
+                PageRequest.of(pageNumber, pageSize).withSort(Sort.by(Sort.Direction.DESC, "creationDate")));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
@@ -357,10 +367,10 @@ public class ClubService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Club>> getFeaturedClubs(Integer pageNumber, Integer size) {
-        if (pageNumber < 0 || size < 0)
+    public ResponseEntity<List<Club>> getFeaturedClubs(Integer pageNumber, Integer pageSize) {
+        if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Club> resultPage = clubRepository.findAllByFeatured(true, PageRequest.of(pageNumber, size));
+        Page<Club> resultPage = clubRepository.findAllByFeatured(true, PageRequest.of(pageNumber, pageSize));
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
