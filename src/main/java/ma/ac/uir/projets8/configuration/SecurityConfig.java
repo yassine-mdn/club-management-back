@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.service.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +24,17 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final String[] publicEndpoints = {
+            "/api/v1/clubs",
+            "/api/v1/clubs/featured",
+            "/api/v1/clubs/{club_id}",
+            "/api/v1/clubs/{club_id}/details",
+            "/api/v1/clubs/{club_id}/events",
+            "/api/v1/clubs/detailed",
+            "api/v1/events/{id}",
+            "api/v1/events",
+    };
+
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
@@ -32,7 +44,11 @@ public class SecurityConfig {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**","/api/v1/test/**")
+                .requestMatchers(HttpMethod.GET,publicEndpoints)
+                .permitAll()
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers("/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

@@ -59,6 +59,7 @@ dependencies {
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.3.0'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-java8time:2.1.0.RELEASE'
     implementation 'org.dhatim:fastexcel:0.15.4'
+    implementation 'commons-io:commons-io:2.14.0'
     implementation 'org.dhatim:fastexcel-reader:0.15.4'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'

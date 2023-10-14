@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.Document;
@@ -15,6 +16,7 @@ import ma.ac.uir.projets8.service.DocumentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,20 +34,22 @@ public class DocumentController {
     private final ClubService clubService;
 
 
-    @Operation(summary = "Get all documents")
+    @Operation(summary = "Get all documents", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<Document>> getAllDocuments() {
         return ResponseEntity.ok(documentService.getAllDocuments());
     }
 
-    @Operation(summary = "Get a document by ID")
+    @Operation(summary = "Get a document by ID", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Document not found")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER','SECRETARY')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getDocumentById(@PathVariable Long id) throws IOException {
         byte[] document = documentService.downloadDocument(id);
@@ -55,6 +59,8 @@ public class DocumentController {
                 .body(document);
     }
 
+    @Operation(summary = "save document", security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER','SECRETARY')")
     @PostMapping("/send/src/{club_id}")
     public ResponseEntity<?> sendDocument(@PathVariable("club_id") Integer club_id, @RequestParam("file") MultipartFile file) throws IOException {
         Club sender = clubService.getClubById(club_id).getBody();
