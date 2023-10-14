@@ -2,6 +2,7 @@ package ma.ac.uir.projets8.controller;
 
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import ma.ac.uir.projets8.model.Account;
 import ma.ac.uir.projets8.model.ClubDetails;
 import ma.ac.uir.projets8.model.Event;
@@ -28,7 +29,7 @@ public class EventController {
 
     private final EventService eventService;
 
-    @Operation(summary = "Create a new event")
+    @Operation(summary = "Create a new event", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Event successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
@@ -50,7 +51,7 @@ public class EventController {
         return optionalEvent.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Update an event by ID")
+    @Operation(summary = "Update an event by ID", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully updated"),
             @ApiResponse(responseCode = "404", description = "Event not found"),
@@ -59,10 +60,10 @@ public class EventController {
     @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
     @PutMapping("/{id}")
     public ResponseEntity<Event> updateEvent(@PathVariable Long id, @RequestBody NewEventRequest request) {
-        return ResponseEntity.ok(eventService.updateEvent(id,request));
+        return ResponseEntity.ok(eventService.updateEvent(id, request));
     }
 
-    @Operation(summary = "Delete an event by ID")
+    @Operation(summary = "Delete an event by ID", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Event not found")
@@ -74,7 +75,9 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "get the list of transactions", description = "returns the associated list of transactions according to the event with the given id")
+    @Operation(summary = "get the list of transactions",
+            description = "returns the associated list of transactions according to the event with the given id",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -85,7 +88,9 @@ public class EventController {
         return eventService.getTransactionsByEvent(id);
     }
 
-    @Operation(summary = "get the list of participants", description = "returns the participants list of transactions according to the event with the given id")
+    @Operation(summary = "get the list of participants",
+            description = "returns the participants list of transactions according to the event with the given id",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))

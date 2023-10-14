@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Club;
@@ -37,18 +38,18 @@ public class ClubController {
     private final ClubDetailsService clubDetailsService;
 
 
-    @PreAuthorize("hasAnyRole('ADMIN','PROF','STUDENT')")
+
     @PostMapping
-    @Operation(summary = "create a new Club", description = "adds an club to the database")
+    @Operation(summary = "create a new Club", description = "adds an club to the database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Club successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid request"),
             @ApiResponse(responseCode = "406", description = "Email already exists")
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','STUDENT')")
     public ResponseEntity<String> addClub(@RequestBody ClubController.NewClubRequest request) {
         return clubService.addClub(request);
     }
-
 
     @Operation(summary = "get an club  by id", description = "returns an club per the id")
     @ApiResponses(value = {
@@ -82,7 +83,7 @@ public class ClubController {
         return clubService.getClubEvents(id);
     }
 
-    @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id")
+    @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -97,7 +98,7 @@ public class ClubController {
     }
 
 
-    @Operation(summary = "get All Clubs with specified status", description = "returns all the club with specified status ")
+    @Operation(summary = "get All Clubs with specified status", description = "returns all the club with specified status ", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved")
     })
@@ -107,7 +108,7 @@ public class ClubController {
         return clubService.getClubsByStatus(status);
     }
 
-    @Operation(summary = "update a club by id", description = "updates the club with the specified id")
+    @Operation(summary = "update a club by id", description = "updates the club with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -119,7 +120,7 @@ public class ClubController {
         return clubService.updateClub(id, request);
     }
 
-    @Operation(summary = "update club details by id", description = "updates the club details of the clubwith the specified id")
+    @Operation(summary = "update club details by id", description = "updates the club details of the clubwith the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -130,9 +131,7 @@ public class ClubController {
         return clubDetailsService.updateClub(id, request);
     }
 
-
-    //@PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "delete a club with id", description = "delete the club with the specified id")
+    @Operation(summary = "delete a club with id", description = "delete the club with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "deleted updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -202,7 +201,9 @@ public class ClubController {
         clubService.getClubMembersFile(id, response);
     }
 
-    @Operation(summary = "get a page of pending clubs", description = "returns a specific page of pending clubs with the specified number of lines")
+    @Operation(summary = "get a page of pending clubs",
+            description = "returns a specific page of pending clubs with the specified number of lines",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
@@ -220,7 +221,9 @@ public class ClubController {
     }
 
 
-    @Operation(summary = "get a page of featured clubs", description = "returns a specific page of featured clubs with the specified number of lines")
+    @Operation(summary = "get a page of featured clubs",
+            description = "returns a specific page of featured clubs with the specified number of lines",
+            security = @SecurityRequirement(name = "bearerAuth"))
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",

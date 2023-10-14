@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Account;
 import ma.ac.uir.projets8.model.Meeting;
@@ -28,7 +29,7 @@ public class MeetingController {
     private final MeetingService meetingService;
 
 
-    @Operation(summary = "create a new Meeting", description = "adds a new meeting  to the database")
+    @Operation(summary = "create a new Meeting", description = "adds a new meeting  to the database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Meeting account successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid request"),
@@ -51,11 +52,12 @@ public class MeetingController {
         return meetingService.getAllMeetings();
     }
 
-    @Operation(summary = "get an meeting by id", description = "returns an meeting per the id")
+    @Operation(summary = "get an meeting by id", description = "returns an meeting per the id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER','SECRETARY')")
     @GetMapping("{meeting_id}")
     public ResponseEntity<Meeting> getMeetingById(@PathVariable("meeting_id") Integer id){
         
@@ -73,7 +75,7 @@ public class MeetingController {
         return meetingService.getMeetingOrganiser(id);
     }
 
-    @Operation(summary = "get the participants of the meeting", description = "returns the participants account list per the meeting id")
+    @Operation(summary = "get the participants of the meeting", description = "returns the participants account list per the meeting id",deprecated = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -84,7 +86,7 @@ public class MeetingController {
         return meetingService.getMeetingParticipants(id);
     }
 
-    @Operation(summary = "update an account by id", description = "updates the meeting with the specified id")
+    @Operation(summary = "update an account by id", description = "updates the meeting with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
@@ -96,7 +98,7 @@ public class MeetingController {
        return meetingService.updateMeeting(id,request);
     }
 
-    @Operation(summary = "delete an Meeting by id", description = "delete the meeting with the specified id")
+    @Operation(summary = "delete an Meeting by id", description = "delete the meeting with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "meeting deleted"),
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
