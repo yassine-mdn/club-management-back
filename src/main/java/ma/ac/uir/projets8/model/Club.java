@@ -78,8 +78,8 @@ public class Club {
     private Set<Document> documents;
 
 
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER,optional = false)
-    private Budget budget;
+    @OneToMany( mappedBy = "club",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    private Set<Budget> budget;
 
     public void addMember(List<Student> students){
         for (Student student : students) {

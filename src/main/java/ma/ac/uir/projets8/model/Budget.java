@@ -39,7 +39,7 @@ public class Budget {
     private double budget_restant;
 
     @JsonIgnore
-    @OneToOne
+    @ManyToOne
     private Club club;
 
     private BudgetType budgetType;
