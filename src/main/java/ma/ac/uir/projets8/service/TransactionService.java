@@ -2,7 +2,9 @@ package ma.ac.uir.projets8.service;
 
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.TransactionController;
+import ma.ac.uir.projets8.exception.BudgetNotFoundException;
 import ma.ac.uir.projets8.exception.TransactionNotFoundException;
+import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.repository.BudgetRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
@@ -27,7 +29,9 @@ public class TransactionService {
         transaction.setDate(request.date());
         transaction.setValeur(request.valeur());
         transaction.setEvent(eventRepository.findById(request.idEvent()).orElseThrow(() -> new TransactionNotFoundException(request.idEvent())));
-        transaction.setBudget(budgetRepository.findById(request.idBudget()).orElseThrow(() -> new TransactionNotFoundException(request.idBudget())));
+        Budget budget = budgetRepository.findById(request.idBudget()).orElseThrow(()->new BudgetNotFoundException(request.idBudget()));
+        budget.setUsed_budget(budget.getUsed_budget()+request.valeur());
+        transaction.setBudget(budget);
         return transactionRepository.save(transaction);
     }
 
@@ -44,13 +48,26 @@ public class TransactionService {
         if(!transactionRepository.existsById(transaction.getIdTransaction())){
             throw new TransactionNotFoundException(transaction.getIdTransaction());
         }
+        // update usedBudget attribute when a transaction is updated
+        Budget budget = transaction.getBudget();
+        budget.setUsed_budget(budget.getUsed_budget()+transaction.getValeur());
+
+        Transaction oldTransaction = transactionRepository.findById(transaction.getIdTransaction()).orElseThrow(()->new TransactionNotFoundException(transaction.getIdTransaction()));
+        Budget oldBudget = oldTransaction.getBudget();
+        oldBudget.setUsed_budget(oldBudget.getUsed_budget()-oldTransaction.getValeur());
+
         return transactionRepository.save(transaction);
+
     }
 
     public void deleteTransaction(Long idTransaction){
         if(!transactionRepository.existsById(idTransaction)    ){
             throw new TransactionNotFoundException(idTransaction);
         }
+        // update usedBudget when a transaction is deleted
+        Transaction transaction = transactionRepository.findById(idTransaction).orElseThrow(()->new TransactionNotFoundException(idTransaction));
+        Budget budget = transaction.getBudget();
+        budget.setUsed_budget(budget.getUsed_budget()-transaction.getValeur());
         transactionRepository.deleteById(idTransaction);
     }
 }
