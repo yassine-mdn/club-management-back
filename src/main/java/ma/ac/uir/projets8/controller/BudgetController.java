@@ -13,6 +13,7 @@ import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.model.enums.BudgetType;
 import ma.ac.uir.projets8.service.BudgetService;
 import ma.ac.uir.projets8.service.DocumentService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,13 +61,21 @@ public class BudgetController {
         return ResponseEntity.ok(budgetService.findBudgetById(id));
     }
 
-    //todo: delete budget
+    @Operation(summary = "Delete Budget by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Budget deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Budget not found - the id is invalid")
+    })
+    @DeleteMapping("/{id_budget}")
+    public ResponseEntity<String> deleteBudget(@PathVariable("id_budget") Long id_budget){
+        return budgetService.deleteBudgetById(id_budget);
+    }
+
     //todo: schedule budget update once a year
 
     public record NewBudgetRequest(
             BudgetType budgetType,
             double budget_initial,
-
             int idClub
 
     ) {

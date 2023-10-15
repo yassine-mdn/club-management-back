@@ -50,4 +50,13 @@ public class BudgetService {
     public Budget findBudgetById(Long id){
         return budgetRepository.findById(id).orElseThrow(()-> new BudgetNotFoundException(id));
     }
+
+    public ResponseEntity<String> deleteBudgetById(Long id){
+        try{
+            budgetRepository.deleteById(id);
+            return new ResponseEntity<>("Budget deleted succefully", HttpStatus.OK);
+        }catch (RuntimeException  exception){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,new BudgetNotFoundException(id).getMessage());
+        }
+    }
 }
