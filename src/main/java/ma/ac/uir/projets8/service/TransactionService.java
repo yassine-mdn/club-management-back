@@ -2,7 +2,9 @@ package ma.ac.uir.projets8.service;
 
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.TransactionController;
+import ma.ac.uir.projets8.exception.BudgetNotFoundException;
 import ma.ac.uir.projets8.exception.TransactionNotFoundException;
+import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.repository.BudgetRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
@@ -27,7 +29,9 @@ public class TransactionService {
         transaction.setDate(request.date());
         transaction.setValeur(request.valeur());
         transaction.setEvent(eventRepository.findById(request.idEvent()).orElseThrow(() -> new TransactionNotFoundException(request.idEvent())));
-        transaction.setBudget(budgetRepository.findById(request.idBudget()).orElseThrow(() -> new TransactionNotFoundException(request.idBudget())));
+        Budget budget = budgetRepository.findById(request.idBudget()).orElseThrow(()->new BudgetNotFoundException(request.idBudget()));
+        budget.setUsed_budget(budget.getUsed_budget()+request.valeur());
+        transaction.setBudget(budget);
         return transactionRepository.save(transaction);
     }
 
@@ -45,6 +49,7 @@ public class TransactionService {
             throw new TransactionNotFoundException(transaction.getIdTransaction());
         }
         return transactionRepository.save(transaction);
+
     }
 
     public void deleteTransaction(Long idTransaction){
