@@ -64,6 +64,10 @@ public class TransactionService {
         if(!transactionRepository.existsById(idTransaction)    ){
             throw new TransactionNotFoundException(idTransaction);
         }
+        // update usedBudget when a transaction is deleted
+        Transaction transaction = transactionRepository.findById(idTransaction).orElseThrow(()->new TransactionNotFoundException(idTransaction));
+        Budget budget = transaction.getBudget();
+        budget.setUsed_budget(budget.getUsed_budget()-transaction.getValeur());
         transactionRepository.deleteById(idTransaction);
     }
 }
