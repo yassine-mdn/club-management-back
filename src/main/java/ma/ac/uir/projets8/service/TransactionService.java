@@ -48,6 +48,14 @@ public class TransactionService {
         if(!transactionRepository.existsById(transaction.getIdTransaction())){
             throw new TransactionNotFoundException(transaction.getIdTransaction());
         }
+        // update usedBudget attribute when a transaction is updated
+        Budget budget = transaction.getBudget();
+        budget.setUsed_budget(budget.getUsed_budget()+transaction.getValeur());
+
+        Transaction oldTransaction = transactionRepository.findById(transaction.getIdTransaction()).orElseThrow(()->new TransactionNotFoundException(transaction.getIdTransaction()));
+        Budget oldBudget = oldTransaction.getBudget();
+        oldBudget.setUsed_budget(oldBudget.getUsed_budget()-oldTransaction.getValeur());
+
         return transactionRepository.save(transaction);
 
     }
