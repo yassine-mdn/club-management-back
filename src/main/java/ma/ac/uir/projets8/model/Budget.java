@@ -36,7 +36,7 @@ public class Budget {
 
     private double budget_initial;
 
-    private double budget_restant;
+    private double used_budget;
 
     @JsonIgnore
     @ManyToOne

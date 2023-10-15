@@ -31,7 +31,7 @@ public class BudgetService {
         Budget budget = new Budget();
         budget.setBudgetType(request.budgetType());
         budget.setBudget_initial(request.budget_initial());
-        budget.setBudget_restant(request.budget_initial());
+        budget.setUsed_budget(0);
         budget.setClub(clubRepository.findById(request.idClub()).orElseThrow(()->new ClubNotFoundException(request.idClub())));
 
         return budgetRepository.save(budget);
