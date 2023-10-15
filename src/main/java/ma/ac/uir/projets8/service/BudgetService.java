@@ -67,4 +67,11 @@ public class BudgetService {
         budgetRepository.findAll().forEach(budget -> budget.setUsed_budget(0));
     }
 
+    public ResponseEntity<List<Transaction>> getTransactionsByBudget(Long id){
+        try {
+            return ResponseEntity.ok(new ArrayList<>(budgetRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getTransactions()));
+        }catch (MeetingNotFoundException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
 }

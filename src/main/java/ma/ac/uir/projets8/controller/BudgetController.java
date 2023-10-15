@@ -71,7 +71,15 @@ public class BudgetController {
         return budgetService.deleteBudgetById(id_budget);
     }
 
-
+    @Operation(summary = "get the list of transactions", description = "returns the associated list of transactions according to the budget with the given id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
+    @GetMapping("{budget_id}/transactions")
+    public ResponseEntity<List<Transaction>> getTransactionsByBudget(@PathVariable("budget_id") Long id){
+        return budgetService.getTransactionsByBudget(id);
+    }
 
     public record NewBudgetRequest(
             BudgetType budgetType,
