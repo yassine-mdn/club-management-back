@@ -12,6 +12,7 @@ import ma.ac.uir.projets8.repository.ClubRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -59,4 +60,11 @@ public class BudgetService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,new BudgetNotFoundException(id).getMessage());
         }
     }
+
+    // remise a zero du budget utilise par chaque club chaque annee (le 1er septembre)
+    @Scheduled(cron = "0 0 0 1 9 ?")
+    public void updateUsedBudgetOnceAYear(){
+        budgetRepository.findAll().forEach(budget -> budget.setUsed_budget(0));
+    }
+
 }

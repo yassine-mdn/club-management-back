@@ -71,7 +71,7 @@ public class BudgetController {
         return budgetService.deleteBudgetById(id_budget);
     }
 
-    //todo: schedule budget update once a year
+
 
     public record NewBudgetRequest(
             BudgetType budgetType,
