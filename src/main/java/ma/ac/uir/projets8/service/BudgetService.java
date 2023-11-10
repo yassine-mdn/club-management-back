@@ -2,14 +2,17 @@ package ma.ac.uir.projets8.service;
 
 
 import lombok.RequiredArgsConstructor;
-import ma.ac.uir.projets8.exception.BudgetNotFoundException;
-import ma.ac.uir.projets8.exception.DocumentNotFoundException;
-import ma.ac.uir.projets8.exception.MeetingNotFoundException;
+import ma.ac.uir.projets8.controller.BudgetController;
+import ma.ac.uir.projets8.controller.TransactionController;
+import ma.ac.uir.projets8.exception.*;
 import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.repository.BudgetRepository;
+import ma.ac.uir.projets8.repository.ClubRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,44 +24,47 @@ import java.util.Optional;
 @Service
 public class BudgetService {
 
+    @Autowired
     private final BudgetRepository budgetRepository;
+    private final ClubRepository clubRepository;
 
-    //TODO: khassou rework kamel
+    public Budget createBudget(BudgetController.NewBudgetRequest request){
+        Budget budget = new Budget();
+        budget.setBudgetType(request.budgetType());
+        budget.setBudget_initial(request.budget_initial());
+        budget.setUsed_budget(0);
+        budget.setClub(clubRepository.findById(request.idClub()).orElseThrow(()->new ClubNotFoundException(request.idClub())));
 
-    public Budget createBudget(Budget budget) {
         return budgetRepository.save(budget);
     }
 
-    public Optional<Budget> getBudgetById(Long id) {
-        return budgetRepository.findById(id);
+    public Budget updateBudgetById(Long id, BudgetController.NewBudgetRequest request){
+        // i assume that budget_restant is automatically updated and shouldn't change by a request
+        // the same goes for transactions
+        Budget budget = budgetRepository.findById(id).orElseThrow(()-> new BudgetNotFoundException(id));
+        budget.setBudget_initial(request.budget_initial());
+        budget.setBudgetType(request.budgetType());
+        budget.setClub(clubRepository.findById(request.idClub()).orElseThrow(()->new ClubNotFoundException(request.idClub())));
+        return budgetRepository.save(budget);
     }
 
-    public List<Budget> getAllBudgets() {
-        return budgetRepository.findAll();
+    public Budget findBudgetById(Long id){
+        return budgetRepository.findById(id).orElseThrow(()-> new BudgetNotFoundException(id));
     }
 
-    public Budget updateBudget(Long id, Budget budget) {
-        return budgetRepository.findById(id)
-                .map(updatedBudget -> {
-                    updatedBudget.setBudget_initial(budget.getBudget_initial());
-                    updatedBudget.setBudget_restant(budget.getBudget_restant());
-                    return budgetRepository.save(budget);
-                })
-                .orElseThrow(() -> new BudgetNotFoundException(id));
-    }
-
-    public void deleteBudget(Long id) {
-        if (!budgetRepository.existsById(id)) {
-            throw new BudgetNotFoundException(id);
-        }
-        budgetRepository.deleteById(id);
-    }
-
-    public ResponseEntity<List<Transaction>> getTransactionsByBudget(Long id){
-        try {
-            return ResponseEntity.ok(new ArrayList<>(budgetRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getTransactions()));
-        }catch (MeetingNotFoundException e){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+    public ResponseEntity<String> deleteBudgetById(Long id){
+        try{
+            budgetRepository.deleteById(id);
+            return new ResponseEntity<>("Budget deleted succefully", HttpStatus.OK);
+        }catch (RuntimeException  exception){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,new BudgetNotFoundException(id).getMessage());
         }
     }
+
+    // remise a zero du budget utilise par chaque club chaque annee (le 1er septembre)
+    @Scheduled(cron = "0 0 0 1 9 ?")
+    public void updateUsedBudgetOnceAYear(){
+        budgetRepository.findAll().forEach(budget -> budget.setUsed_budget(0));
+    }
+
 }

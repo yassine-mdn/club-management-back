@@ -8,13 +8,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Document;
+import ma.ac.uir.projets8.model.Event;
 import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.enums.BudgetType;
 import ma.ac.uir.projets8.service.BudgetService;
 import ma.ac.uir.projets8.service.DocumentService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,71 +29,57 @@ public class BudgetController {
 
     private final BudgetService budgetService;
 
-
-
-    @Operation(summary = "Create a new budget")
+    @Operation(summary = "Create a new Budget")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Budget successfully created"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "201", description = "Budget created successfully"),
+            @ApiResponse(responseCode = "400",description = "Invalid request")
     })
     @PostMapping
-    public ResponseEntity<Budget> createBudget(@RequestBody Budget budget) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(budgetService.createBudget(budget));
+    public ResponseEntity<Budget> createBudget(@RequestBody BudgetController.NewBudgetRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(budgetService.createBudget(request));
     }
 
-    @Operation(summary = "Get all budgets")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved")
-    @GetMapping
-    public ResponseEntity<List<Budget>> getAllBudgets() {
-        return ResponseEntity.ok(budgetService.getAllBudgets());
-    }
-
-    @Operation(summary = "Get a budget by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
-            @ApiResponse(responseCode = "404", description = "Budget not found")
-    })
-    @GetMapping("/{id}")
-    public ResponseEntity<Budget> getBudgetById(@PathVariable Long id) {
-        Optional<Budget> optionalBudget = budgetService.getBudgetById(id);
-        if (optionalBudget.isPresent()) {
-            return ResponseEntity.ok(optionalBudget.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-
-    @Operation(summary = "Update a budget by ID")
+    @Operation(summary = "Update budget by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully updated"),
             @ApiResponse(responseCode = "404", description = "Budget not found"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Budget> updateBudget(@PathVariable Long id, @RequestBody Budget updatedBudget) {
-        return ResponseEntity.ok(budgetService.updateBudget(id,updatedBudget));
+    public ResponseEntity<Budget> updateBudget(@PathVariable Long id, @RequestBody BudgetController.NewBudgetRequest request){
+        return ResponseEntity.ok(budgetService.updateBudgetById(id,request));
     }
 
-    @Operation(summary = "Delete a budget by ID")
+    @Operation(summary = "Get Budget by id ")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Successfully deleted"),
-            @ApiResponse(responseCode = "404", description = "Budget not found")
+            @ApiResponse(responseCode = "200", description = "Budget successfully fetched"),
+            @ApiResponse(responseCode = "404",description = "Budget not found"),
+            @ApiResponse(responseCode = "400",description = "Invalid request")
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBudget(@PathVariable Long id) {
-        budgetService.deleteBudget(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/{budget_id}")
+    public ResponseEntity<Budget> getBudgetById(@PathVariable("budget_id") Long id){
+        return ResponseEntity.ok(budgetService.findBudgetById(id));
     }
 
-    @Operation(summary = "get the list of transactions", description = "returns the associated list of transactions according to the budget with the given id")
+    @Operation(summary = "Delete Budget by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
-            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+            @ApiResponse(responseCode = "200", description = "Budget deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Budget not found - the id is invalid")
     })
-    @GetMapping("{budget_id}/transactions")
-    public ResponseEntity<List<Transaction>> getTransactionsByBudget(@PathVariable("budget_id") Long id){
-        return budgetService.getTransactionsByBudget(id);
+    @DeleteMapping("/{id_budget}")
+    public ResponseEntity<String> deleteBudget(@PathVariable("id_budget") Long id_budget){
+        return budgetService.deleteBudgetById(id_budget);
     }
+
+
+
+    public record NewBudgetRequest(
+            BudgetType budgetType,
+            double budget_initial,
+            int idClub
+
+    ) {
+    }
+
 }
 

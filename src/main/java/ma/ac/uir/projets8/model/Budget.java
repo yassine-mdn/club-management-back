@@ -3,6 +3,7 @@ package ma.ac.uir.projets8.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import ma.ac.uir.projets8.model.enums.BudgetType;
 
 import java.util.Set;
 
@@ -35,10 +36,12 @@ public class Budget {
 
     private double budget_initial;
 
-    private double budget_restant;
+    private double used_budget;
 
     @JsonIgnore
-    @OneToOne
+    @ManyToOne
     private Club club;
+
+    private BudgetType budgetType;
 
 }
