@@ -9,7 +9,12 @@ import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.repository.BudgetRepository;
 import ma.ac.uir.projets8.repository.ClubRepository;
+import ma.ac.uir.projets8.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,6 +32,7 @@ public class BudgetService {
     @Autowired
     private final BudgetRepository budgetRepository;
     private final ClubRepository clubRepository;
+    private final TransactionRepository transactionRepository;
 
     public Budget createBudget(BudgetController.NewBudgetRequest request){
         Budget budget = new Budget();
@@ -67,10 +73,13 @@ public class BudgetService {
         budgetRepository.findAll().forEach(budget -> budget.setUsed_budget(0));
     }
 
-    public ResponseEntity<List<Transaction>> getTransactionsByBudget(Long id){
+    public ResponseEntity<Page<Transaction>> getTransactionsByBudget(Long id, Integer pageNumber, Integer pageSize){
         try {
-            return ResponseEntity.ok(new ArrayList<>(budgetRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getTransactions()));
-        }catch (MeetingNotFoundException e){
+            Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by("date").descending());
+            Page<Transaction> transactionsPage = transactionRepository.findAllByBudget_IdBudget(id, pageable);
+            if (transactionsPage.isEmpty()) throw new BudgetNotFoundException(id);
+            return ResponseEntity.ok(transactionsPage);
+        }catch (BudgetNotFoundException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
