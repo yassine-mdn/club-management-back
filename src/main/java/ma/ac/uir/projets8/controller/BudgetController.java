@@ -72,7 +72,7 @@ public class BudgetController {
     public ResponseEntity<String> deleteBudget(@PathVariable("id_budget") Long id_budget){
         return budgetService.deleteBudgetById(id_budget);
     }
-    
+
     @Operation(summary = "get Page of transactions", description = "returns a page of the  associated transactions according to the budget with the given id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully retrieved",

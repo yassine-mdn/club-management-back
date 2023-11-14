@@ -74,13 +74,20 @@ public class BudgetService {
     }
 
     public ResponseEntity<Page<Transaction>> getTransactionsByBudget(Long id, Integer pageNumber, Integer pageSize){
-        try {
-            Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by("date").descending());
-            Page<Transaction> transactionsPage = transactionRepository.findAllByBudget_IdBudget(id, pageable);
-            if (transactionsPage.isEmpty()) throw new BudgetNotFoundException(id);
-            return ResponseEntity.ok(transactionsPage);
-        }catch (BudgetNotFoundException e){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+
+        if (pageNumber < 0 || pageSize < 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
         }
+
+        Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by("date").descending());
+        Page<Transaction> transactionsPage = transactionRepository.findAllByBudget_IdBudget(id, pageable);
+        
+        if (transactionsPage.isEmpty()) throw new BudgetNotFoundException(id);
+
+        if (pageNumber > transactionsPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        return ResponseEntity.ok(transactionsPage);
+
     }
 }
