@@ -5,6 +5,9 @@ import ma.ac.uir.projets8.exception.DocumentNotFoundException;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.Document;
 import ma.ac.uir.projets8.repository.DocumentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,6 +65,11 @@ public class DocumentService {
 
     public List<Document> getAllDocuments() {
         return documentRepository.findAll();
+    }
+
+
+    public Page<Document> getDocumentPageBySenderId(Integer idC,  Integer pageNumber, Integer pageSize){
+        return documentRepository.findAllBySender_IdC(idC, PageRequest.of(pageNumber,pageSize, Sort.by(Sort.Direction.DESC,"dateUpload")));
     }
 
 }
