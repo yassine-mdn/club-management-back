@@ -76,7 +76,8 @@ public class Club {
     @OneToMany(mappedBy = "organisateur",fetch = FetchType.LAZY)
     private Set<Event> events;
 
-    @OneToMany(fetch = FetchType.EAGER,mappedBy = "sender")
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "sender")
     private Set<Document> documents;
 
 
