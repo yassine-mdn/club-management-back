@@ -356,12 +356,11 @@ public class ClubService {
             List<ClubType> clubTypes) {
         if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Club> resultPage = clubRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndStatusInAndTypeIn(
-                searchKeyWord,
-                searchKeyWord,
-                PageRequest.of(pageNumber, pageSize),
+        Page<Club> resultPage = clubRepository.findAllByFiltered(
+                clubTypes,
                 statusList,
-                clubTypes
+                searchKeyWord,
+                PageRequest.of(pageNumber, pageSize)
         );
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
