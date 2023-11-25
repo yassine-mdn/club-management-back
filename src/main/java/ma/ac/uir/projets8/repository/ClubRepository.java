@@ -13,7 +13,12 @@ import java.util.Optional;
 public interface ClubRepository extends JpaRepository<Club, Integer> {
 
 
-    Page<Club> findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
+    Page<Club> findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndStatusInAndTypeIn(
+            String name,
+            String description,
+            Pageable pageable,
+            List<ClubStatus> statusList,
+            List<ClubType> clubTypes);
 
     Page<Club> findAllByFeatured(Boolean featured, Pageable pageable);
 
