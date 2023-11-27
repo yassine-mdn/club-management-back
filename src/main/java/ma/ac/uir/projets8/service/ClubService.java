@@ -385,4 +385,13 @@ public class ClubService {
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
+
+    public ResponseEntity<List<Budget>> getClubBudgets(Integer id) {
+        try {
+            Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+            return ResponseEntity.ok(new ArrayList<>(club.getBudgets()));
+        } catch (ClubNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
 }

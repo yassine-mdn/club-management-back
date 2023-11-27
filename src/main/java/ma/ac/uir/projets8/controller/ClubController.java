@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import ma.ac.uir.projets8.model.Club;
-import ma.ac.uir.projets8.model.ClubDetails;
-import ma.ac.uir.projets8.model.Event;
-import ma.ac.uir.projets8.model.Student;
+import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
 import ma.ac.uir.projets8.repository.ClubRepository;
@@ -256,6 +253,18 @@ public class ClubController {
         return clubService.getFeaturedClubs(pageNumber, pageSize);
     }
 
+    @Operation(summary = "get the budgets of a club ",
+            description = "returns the budgets of a club with the specified id",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "invalid club id"),
+    })
+    @GetMapping("/{club_id}/budgets")
+    public ResponseEntity<List<Budget>> getClubBudgets(
+            @PathVariable("club_id") Integer id) {
+        return clubService.getClubBudgets(id);
+    }
     public record NewClubRequest(
             String name,
             String description,
