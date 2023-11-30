@@ -38,6 +38,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
+    // TODO: remove "/**" from authorizeHttpRequests()
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -48,7 +49,7 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**")
+                .requestMatchers("/**","/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -66,13 +67,13 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Origin", "Access-Control-Allow-Origin", "Content-Type",
                 "Accept", "Authorization", "Origin, Accept", "X-Requested-With",
                 "Access-Control-Request-Method", "Access-Control-Request-Headers"));
         configuration.setExposedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization",
-                "Access-Control-Allow-Origin", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
+                "Access-Control-Allow-Origin", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials","total-pages"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

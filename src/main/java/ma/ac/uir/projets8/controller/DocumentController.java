@@ -8,17 +8,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Club;
 import ma.ac.uir.projets8.model.Document;
 import ma.ac.uir.projets8.repository.DocumentRepository;
 import ma.ac.uir.projets8.service.ClubService;
 import ma.ac.uir.projets8.service.DocumentService;
+import org.springdoc.core.converters.models.PageableAsQueryParam;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
@@ -67,6 +72,25 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.uploadFichier(file, sender));
     }
 
+
+    @Operation(summary = "get domcuments by sender id", security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
+    @GetMapping("/sender/{idC}")
+    public ResponseEntity<List<Document>> getDocumentsBySenderId(
+            @PathVariable("idC") Integer idC,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize) {
+
+        if (pageNumber < 0 || pageSize < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+        Page<Document> docs = documentService.getDocumentPageBySenderId(idC, pageNumber, pageSize);
+        if (pageNumber > docs.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(docs.getTotalPages()));
+        return new ResponseEntity<>(docs.getContent(), responseHeaders, HttpStatus.OK);
+    }
 
 
 }
