@@ -151,13 +151,13 @@ public class ClubController {
     public ResponseEntity<List<Club>> getClubsPageable(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize,
-            @RequestParam(name = "search", required = false) String searchKeyWord
+            @RequestParam(name = "search", defaultValue = "") String searchKeyWord,
+            @RequestParam(
+                    name = "status",
+                    defaultValue = "CREATION_STEP_1,CREATION_STEP_2,CREATION_STEP_3,ACTIVE,ABANDONED,DECLINED") List<ClubStatus> clubStatuses,
+            @RequestParam(name = "type", defaultValue = "NORMAL,ACADEMIC") List<ClubType> clubTypes
     ) {
-        if (searchKeyWord != null)
-            return clubService.getCubsPageBySearch(searchKeyWord, pageNumber, pageSize);
-        else
-            return clubService.getClubsPage(pageNumber, pageSize);
-
+            return clubService.getCubsPageFiltered(searchKeyWord, pageNumber, pageSize, clubStatuses, clubTypes);
     }
 
     @Operation(summary = "get Page Clubs with specified status", description = "returns page of clubs with specified status ", security = @SecurityRequirement(name = "bearerAuth"))

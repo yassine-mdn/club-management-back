@@ -348,10 +348,20 @@ public class ClubService {
     }
 
 
-    public ResponseEntity<List<Club>> getCubsPageBySearch(String searchKeyWord, Integer pageNumber, Integer pageSize) {
+    public ResponseEntity<List<Club>> getCubsPageFiltered(
+            String searchKeyWord,
+            Integer pageNumber,
+            Integer pageSize,
+            List<ClubStatus> statusList,
+            List<ClubType> clubTypes) {
         if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Club> resultPage = clubRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(searchKeyWord, searchKeyWord, PageRequest.of(pageNumber, pageSize));
+        Page<Club> resultPage = clubRepository.findAllByFiltered(
+                clubTypes,
+                statusList,
+                searchKeyWord,
+                PageRequest.of(pageNumber, pageSize)
+        );
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
