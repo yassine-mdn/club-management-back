@@ -15,8 +15,11 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -107,4 +110,27 @@ public class EventService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
+    public ResponseEntity<List<Event>> getEventsPageFiltered(
+            String searchKeyword,
+            Integer pageNumber,
+            Integer pageSize,
+            List<EventStatus> statusList
+    ){
+        if (pageNumber<0 || pageSize<0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"invalid request: negative page number or size");
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by("date").descending());
+        Page<Event> eventPage = eventRepository.findAllByFilter(statusList,searchKeyword,pageable);
+
+        if(pageNumber>eventPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages",String.valueOf(eventPage.getTotalPages()));
+
+        return new ResponseEntity<>(eventPage.getContent(), responseHeaders, HttpStatus.OK);
+
+    }
 }
