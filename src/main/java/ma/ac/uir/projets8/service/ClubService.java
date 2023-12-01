@@ -26,6 +26,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -205,16 +206,22 @@ public class ClubService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Event>> getClubEvents(Integer id, Integer pageNumber, Integer pageSize) {
+    public ResponseEntity<List<Event>> getClubEvents(Integer id, Integer pageNumber, Integer pageSize,String searchKeyword, List<EventStatus> statusList) {
 
-        if (pageNumber < 0 || pageSize < 0)
+        if (pageNumber < 0 || pageSize < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Event> resultPage = eventRepository.findAllByOrganisateurIdC(id, PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "date")));
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber,pageSize,Sort.by("date").descending());
+        Page<Event> resultPage = eventRepository.findAllByFilterByOrganisateurIdc(id,statusList,searchKeyword,pageable);
+
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
+
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
@@ -394,5 +401,14 @@ public class ClubService {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Budget>> getClubBudgets(Integer id) {
+        try {
+            Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+            return ResponseEntity.ok(new ArrayList<>(club.getBudgets()));
+        } catch (ClubNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }
