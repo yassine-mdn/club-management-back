@@ -7,11 +7,13 @@ import ma.ac.uir.projets8.model.Account;
 import ma.ac.uir.projets8.model.ClubDetails;
 import ma.ac.uir.projets8.model.Event;
 import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -109,6 +111,23 @@ public class EventController {
 
         return eventService.getEventsPage(pageNumber, size);
 
+    }
+
+    @Operation(summary = "Get filtered page of events ",
+        description = "Get events Page filtered by eventStatus or keyword search matching title or description"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404",description = "Bad request")
+    })
+    @GetMapping("/filtered")
+    ResponseEntity<List<Event>> eventsByFilter(
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize,
+            @RequestParam(name = "search",defaultValue = "") String searchKeyword,
+            @RequestParam(name="status",defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
+    ){
+        return eventService.getEventsPageFiltered(searchKeyword,pageNumber,pageSize,statusList);
     }
 
     public record NewEventRequest(
