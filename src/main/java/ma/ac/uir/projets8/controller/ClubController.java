@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.ClubStatus;
 import ma.ac.uir.projets8.model.enums.ClubType;
+import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.service.ClubDetailsService;
 import ma.ac.uir.projets8.service.ClubService;
@@ -69,7 +70,8 @@ public class ClubController {
     }
 
 
-    @Operation(summary = "get an club events by id", description = "returns events organized by a club per the id")
+    @Operation(summary = "get club events by id and/or search,status filter",
+            description = "returns events organized by a club per the id and filtered by status or keyword search")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
@@ -82,9 +84,11 @@ public class ClubController {
     public ResponseEntity<List<Event>> getClubEvents(
             @PathVariable("club_id") Integer id,
             @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "25") Integer pageSize
+            @RequestParam(defaultValue = "25") Integer pageSize,
+            @RequestParam(name = "search", defaultValue = "") String searchKeyword,
+            @RequestParam(name = "status",defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
     ) {
-        return clubService.getClubEvents(id, pageNumber, pageSize);
+        return clubService.getClubEvents(id, pageNumber, pageSize,searchKeyword,statusList);
     }
 
     @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id", security = @SecurityRequirement(name = "bearerAuth"))
