@@ -1,5 +1,6 @@
 package ma.ac.uir.projets8.controller;
 
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -117,8 +118,12 @@ public class EventController {
         description = "Get events Page filtered by eventStatus or keyword search matching title or description"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201",description = "successfully retrieved"),
-            @ApiResponse(responseCode = "404",description = "Bad request")
+            @ApiResponse(responseCode = "201",description = "successfully retrieved",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
+            ),
+            @ApiResponse(responseCode = "404",description = "Bad request",
+                    headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
+            )
     })
     @GetMapping("/filtered")
     ResponseEntity<List<Event>> eventsByFilter(
