@@ -4,6 +4,7 @@ package ma.ac.uir.projets8.service;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.ClubController.NewClubRequest;
+import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.exception.ClubNotFoundException;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.*;
@@ -62,7 +63,7 @@ public class ClubService {
     }
 
     @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
-    public ResponseEntity<String> addClub(NewClubRequest request) {
+    public Club addClub(NewClubRequest request) {
 
         if (!ObjectUtils.allNotNull(request.name(), request.description(), request.committeeIds()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
@@ -72,7 +73,7 @@ public class ClubService {
         club.setType(request.supervisorId() == null ? ClubType.NORMAL : ClubType.ACADEMIC);
         if (request.supervisorId() != null)
             club.addSupervisor(personnelRepository.findById(request.supervisorId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid supervisor id request")));
+                    .orElseThrow(AccountNotFoundException::new));
         club.addCommitteeMembers(studentRepository.findAllById(request.committeeIds()));
         club.setStatus(request.status() == null ? ClubStatus.CREATION_STEP_1 : request.status());
         club.setFeatured(false);
@@ -89,23 +90,16 @@ public class ClubService {
 //        club.setBudget(budget);
 
         club.setCreationDate(Instant.now());
-
-        clubRepository.save(club);
-        return new ResponseEntity<>("Club successfully added to database", HttpStatus.CREATED);
+        return clubRepository.save(club);
     }
 
-    public ResponseEntity<Club> getClubById(Integer id) {
-
-        try {
-            return ResponseEntity.ok(clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id)));
-        } catch (ClubNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+    public Club getClubById(Integer id) {
+        return clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
     }
 
     @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
-    public ResponseEntity<String> updateClub(Integer id, NewClubRequest request) {
-        clubRepository.findById(id).map(club -> {
+    public Club updateClub(Integer id, NewClubRequest request) {
+        return clubRepository.findById(id).map(club -> {
                     if (request.name() != null)
                         club.setName(request.name());
                     if (request.description() != null)
@@ -119,38 +113,37 @@ public class ClubService {
                         club.setFeatured(request.featured());
                     return clubRepository.save(club);
                 }
-        ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
-        return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
+        ).orElseThrow(() -> new ClubNotFoundException(id));
     }
 
-    public ResponseEntity<String> updateClubStatus(Integer id, ClubStatus status) {
+    public Club updateClubStatus(Integer id, ClubStatus status) {
 
         Account account = authenticatedDetailsService.getAuthenticatedAccount();
 
-        clubRepository.findById(id).map(club -> {
+        return clubRepository.findById(id).map(club -> {
                     if (club.getType().equals(ClubType.ACADEMIC) || !Objects.equals(club.getSupervisor().getIdA(), account.getIdA()))
                         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not allowed to change this club status");
                     club.setStatus(status);
                     return clubRepository.save(club);
                 }
-        ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
-        return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
+        ).orElseThrow(() -> new ClubNotFoundException(id));
+
     }
 
     //TODO: add service for club president to make a president change request (email ytsafet l admin)
     //  gha tgeneri email fih lien (za3ma end point) l admin bach yaccepti l request
-    public ResponseEntity<String> changeClubPresident(Integer clubId, Integer newPresidentId) {
+    public Club changeClubPresident(Integer clubId, Integer newPresidentId) {
         Account account = authenticatedDetailsService.getAuthenticatedAccount();
         if (!CollectionUtils.containsAny(account.getRoles(), List.of(Role.PROF, Role.ADMIN))) {
             //TODO : forward to admin or prof
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not allowed to change this club president request has been forwarded to admin/prof");
         }
         Club club = clubRepository.findById(clubId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(clubId).getMessage()));
+                .orElseThrow(() -> new ClubNotFoundException(clubId));
         Student newPresident = studentRepository.findById(newPresidentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
+                .orElseThrow(AccountNotFoundException::new);
         Student oldPresident = studentRepository.findById(clubId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
+                .orElseThrow(AccountNotFoundException::new);
         newPresident.setRoles(List.of(Role.PRESIDENT));
         oldPresident.setRoles(List.of(Role.STUDENT));
         newPresident.setMangedClub(club);
@@ -159,17 +152,15 @@ public class ClubService {
         club.getCommitteeMembers().add(newPresident);
         studentRepository.save(newPresident);
         studentRepository.save(oldPresident);
-        clubRepository.save(club);
-
-        return new ResponseEntity<>("president of club with " + clubId + " successfully changed", HttpStatus.ACCEPTED);
+        return clubRepository.save(club);
     }
 
     //TODO : add service for club president to make a club name change request (email ytsafet l admin)
     //  gha tgeneri email fih lien (za3ma end point) l admin bach yaccepti l request
 
 
-    public ResponseEntity<String> abandonClub(Integer id) {
-        clubRepository.findById(id).map(club -> {
+    public Club abandonClub(Integer id) {
+        return clubRepository.findById(id).map(club -> {
                     club.setStatus(ClubStatus.ABANDONED);
                     club.setMembers(new HashSet<>());
                     club.getCommitteeMembers().forEach(student -> {
@@ -179,76 +170,34 @@ public class ClubService {
                     });
                     return clubRepository.save(club);
                 }
-        ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
-        return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
+        ).orElseThrow(() -> new ClubNotFoundException(id));
     }
 
     @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
-    public ResponseEntity<String> deleteClub(Integer id) {
+    public void deleteClub(Integer id) {
 
         try {
             clubRepository.deleteById(id);
-            return new ResponseEntity<>("Club successfully deleted", HttpStatus.OK);
         } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage());
+            throw new ClubNotFoundException(id);
         }
     }
 
-    public ResponseEntity<List<Club>> getClubsByStatus(ClubStatus status, Integer pageNumber, Integer pageSize) {
-        if (pageNumber < 0 || pageSize < 0)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Club> resultPage = clubRepository.findAllByStatus(status, PageRequest.of(pageNumber, pageSize));
-        if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
-        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    public Page<Club> getClubsByStatus(ClubStatus status, Integer pageNumber, Integer pageSize) {
+        return clubRepository.findAllByStatus(status, PageRequest.of(pageNumber, pageSize));
     }
 
-    public ResponseEntity<List<Event>> getClubEvents(Integer id, Integer pageNumber, Integer pageSize,String searchKeyword, List<EventStatus> statusList) {
-
-        if (pageNumber < 0 || pageSize < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        }
-
-        Pageable pageable = PageRequest.of(pageNumber,pageSize,Sort.by("date").descending());
-        Page<Event> resultPage = eventRepository.findAllByFilterByOrganisateurIdc(id,statusList,searchKeyword,pageable);
-
-        if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
-
-        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    public Page<Event> getClubEvents(Integer id, Integer pageNumber, Integer pageSize, String searchKeyword, List<EventStatus> statusList) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("date").descending());
+        return eventRepository.findAllByFilterByOrganisateurIdc(id, statusList, searchKeyword, pageable);
     }
 
-    public ResponseEntity<List<Student>> getClubMembers(Integer id, Integer pageNumber, Integer pageSize) {
+    public Page<Student> getClubMembers(Integer id, Integer pageNumber, Integer pageSize) {
 
         Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
-        if (pageNumber < 0 || pageSize < 0)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Student> resultPage = studentRepository.findAllByJoinedClubs(club, PageRequest.of(pageNumber, pageSize));
-        if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
-        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+        return studentRepository.findAllByJoinedClubs(club, PageRequest.of(pageNumber, pageSize));
     }
 
-
-    public ResponseEntity<List<Event>> getCurrentEvents(Integer id) {
-
-        try {
-            Club temp = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
-            return ResponseEntity.ok(new ArrayList<>(eventRepository.findAllByOrganisateurAndStatusIn(temp, List.of(EventStatus.REQUESTED, EventStatus.APPROVED))));
-        } catch (ClubNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
-    }
 
     public void getClubMembersFile(Integer id, HttpServletResponse response) {
 
@@ -306,7 +255,7 @@ public class ClubService {
         }
     }
 
-    public String addMembersFromFile(MultipartFile excelFile, Integer id) throws IOException {
+    public void addMembersFromFile(MultipartFile excelFile, Integer id) throws IOException {
 
         try {
 
@@ -336,7 +285,6 @@ public class ClubService {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
-        return "members added successfully";
     }
 
 
@@ -355,26 +303,19 @@ public class ClubService {
     }
 
 
-    public ResponseEntity<List<Club>> getCubsPageFiltered(
+    public Page<Club> getCubsPageFiltered(
             String searchKeyWord,
             Integer pageNumber,
             Integer pageSize,
             List<ClubStatus> statusList,
             List<ClubType> clubTypes) {
-        if (pageNumber < 0 || pageSize < 0)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<Club> resultPage = clubRepository.findAllByFiltered(
+
+        return clubRepository.findAllFiltered(
                 clubTypes,
                 statusList,
                 searchKeyWord,
                 PageRequest.of(pageNumber, pageSize)
         );
-        if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
-        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     public ResponseEntity<List<Club>> getPendingClubs(Integer pageNumber, Integer pageSize) {
@@ -403,12 +344,15 @@ public class ClubService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Budget>> getClubBudgets(Integer id) {
-        try {
-            Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
-            return ResponseEntity.ok(new ArrayList<>(club.getBudgets()));
-        } catch (ClubNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+    public List<Budget> getClubBudgets(Integer id) {
+
+        Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+        return new ArrayList<>(club.getBudgets());
+    }
+
+
+    public Page<Club> getMyClubs(Integer pageNumber, Integer pageSize) {
+        Account account = authenticatedDetailsService.getAuthenticatedAccount();
+        return clubRepository.findAllManagedClubs(account.getIdA(), PageRequest.of(pageNumber, pageSize));
     }
 }
