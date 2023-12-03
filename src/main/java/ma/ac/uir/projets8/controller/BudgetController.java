@@ -1,6 +1,7 @@
 package ma.ac.uir.projets8.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +15,7 @@ import ma.ac.uir.projets8.model.enums.BudgetType;
 import ma.ac.uir.projets8.service.BudgetService;
 import ma.ac.uir.projets8.service.DocumentService;
 import org.checkerframework.checker.units.qual.A;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,7 +73,20 @@ public class BudgetController {
         return budgetService.deleteBudgetById(id_budget);
     }
 
-
+    @Operation(summary = "get Page of transactions", description = "returns a page of the  associated transactions according to the budget with the given id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved",
+                headers={@Header(name="total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
+    @GetMapping("{budget_id}/transactions")
+    public ResponseEntity<Page<Transaction>> getTransactionsByBudget(
+            @PathVariable("budget_id") Long id,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+        ){
+        return budgetService.getTransactionsByBudget(id,pageNumber,pageSize);
+    }
 
     public record NewBudgetRequest(
             BudgetType budgetType,
