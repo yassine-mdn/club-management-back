@@ -57,16 +57,7 @@ public class ClubDetailsService {
     }
 
     @Cacheable(value = "clubsDetails")
-    public ResponseEntity<List<ClubDetails>> getClubsDetailsPage(Integer pageNumber, Integer size) {
-
-        if (pageNumber < 0 || size < 0)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<ClubDetails> resultPage = clubDetailsRepository.findAll(PageRequest.of(pageNumber, size));
-        if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
-        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    public Page<ClubDetails> getClubsDetailsPage(Integer pageNumber, Integer size) {
+       return clubDetailsRepository.findAll(PageRequest.of(pageNumber, size));
     }
 }
