@@ -22,6 +22,9 @@ public interface ClubRepository extends JpaRepository<Club, Integer> {
             @Param("keyword") String keyword,
             Pageable pageable);
 
+    @Query("select c from Club c inner join  Student s on c.idC = s.mangedClub.idC where c.supervisor.idA = :idA or s.idA = :idA")
+    Page<Club> findAllManagedClubs( @Param("idA") Integer idA, Pageable pageable);
+
     Page<Club> findAllByFeatured(Boolean featured, Pageable pageable);
 
     Page<Club> findAllByStatus(ClubStatus status, Pageable pageable);

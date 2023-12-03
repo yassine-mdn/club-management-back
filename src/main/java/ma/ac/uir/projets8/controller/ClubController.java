@@ -16,10 +16,13 @@ import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.service.ClubDetailsService;
 import ma.ac.uir.projets8.service.ClubService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
@@ -86,9 +89,9 @@ public class ClubController {
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize,
             @RequestParam(name = "search", defaultValue = "") String searchKeyword,
-            @RequestParam(name = "status",defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
+            @RequestParam(name = "status", defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
     ) {
-        return clubService.getClubEvents(id, pageNumber, pageSize,searchKeyword,statusList);
+        return clubService.getClubEvents(id, pageNumber, pageSize, searchKeyword, statusList);
     }
 
     @Operation(summary = "get an club members by id", description = "returns events organized by a club per the id", security = @SecurityRequirement(name = "bearerAuth"))
@@ -161,7 +164,7 @@ public class ClubController {
                     defaultValue = "CREATION_STEP_1,CREATION_STEP_2,CREATION_STEP_3,ACTIVE,ABANDONED,DECLINED") List<ClubStatus> clubStatuses,
             @RequestParam(name = "type", defaultValue = "NORMAL,ACADEMIC") List<ClubType> clubTypes
     ) {
-            return clubService.getCubsPageFiltered(searchKeyWord, pageNumber, pageSize, clubStatuses, clubTypes);
+        return clubService.getCubsPageFiltered(searchKeyWord, pageNumber, pageSize, clubStatuses, clubTypes);
     }
 
     @Operation(summary = "get Page Clubs with specified status", description = "returns page of clubs with specified status ", security = @SecurityRequirement(name = "bearerAuth"))
@@ -252,7 +255,7 @@ public class ClubController {
     })
     @GetMapping("/featured")
     public ResponseEntity<List<Club>> getFeaturedClubs(
-            @RequestParam(defaultValue = "0")  Integer pageNumber,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize) {
         return clubService.getFeaturedClubs(pageNumber, pageSize);
     }
@@ -269,6 +272,24 @@ public class ClubController {
             @PathVariable("club_id") Integer id) {
         return clubService.getClubBudgets(id);
     }
+
+    @Operation(summary = "get all managed clubs",
+            description = "returns all clubs managed by the authenticated user",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "invalid page number or size"),
+    })
+    @GetMapping("/managed")
+    public ResponseEntity<Page<Club>> getManagedClubs(
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+        if (pageNumber < 0 || pageSize < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+        return ResponseEntity.ok(clubService.getMyClubs(pageNumber, pageSize));
+    }
+
     public record NewClubRequest(
             String name,
             String description,

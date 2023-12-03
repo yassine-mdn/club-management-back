@@ -411,4 +411,10 @@ public class ClubService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
+
+
+    public Page<Club> getMyClubs(Integer pageNumber, Integer pageSize) {
+        Account account = authenticatedDetailsService.getAuthenticatedAccount();
+        return clubRepository.findAllManagedClubs(account.getIdA(),PageRequest.of(pageNumber, pageSize));
+    }
 }
