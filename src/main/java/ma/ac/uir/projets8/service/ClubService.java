@@ -139,7 +139,7 @@ public class ClubService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not allowed to change this club president request has been forwarded to admin/prof");
         }
         Club club = clubRepository.findById(clubId)
-                .orElseThrow(() ->  new ClubNotFoundException(clubId));
+                .orElseThrow(() -> new ClubNotFoundException(clubId));
         Student newPresident = studentRepository.findById(newPresidentId)
                 .orElseThrow(AccountNotFoundException::new);
         Student oldPresident = studentRepository.findById(clubId)
@@ -310,7 +310,7 @@ public class ClubService {
             List<ClubStatus> statusList,
             List<ClubType> clubTypes) {
 
-        return clubRepository.findAllByFiltered(
+        return clubRepository.findAllFiltered(
                 clubTypes,
                 statusList,
                 searchKeyWord,
@@ -345,12 +345,9 @@ public class ClubService {
     }
 
     public List<Budget> getClubBudgets(Integer id) {
-        try {
-            Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
-            return new ArrayList<>(club.getBudgets());
-        } catch (ClubNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+
+        Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+        return new ArrayList<>(club.getBudgets());
     }
 
 

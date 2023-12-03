@@ -52,7 +52,7 @@ public class ClubDetailsService {
     }
 
     @Cacheable(value = "clubsDetails")
-    public Page<ClubDetails> getClubsDetailsPage(Integer pageNumber, Integer size) {
-        return clubDetailsRepository.findAll(PageRequest.of(pageNumber, size));
+    public Page<ClubDetails> getClubDetailsPageFilterd(String keyword,Integer pageNumber, Integer size) {
+        return clubDetailsRepository.findAllFiltered(keyword,PageRequest.of(pageNumber,size));
     }
 }

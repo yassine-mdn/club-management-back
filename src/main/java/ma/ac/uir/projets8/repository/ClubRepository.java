@@ -16,7 +16,7 @@ public interface ClubRepository extends JpaRepository<Club, Integer> {
 
     @Query("select c from Club c where c.type in :types and c.status in :status " +
             "and (lower(c.name) like lower(concat('%',:keyword,'%')) or lower(c.description) like lower(concat('%',:keyword,'%') ) )")
-    Page<Club> findAllByFiltered(
+    Page<Club> findAllFiltered(
             @Param("types") List<ClubType> clubTypes,
             @Param("status") List<ClubStatus> statusList,
             @Param("keyword") String keyword,

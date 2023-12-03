@@ -237,12 +237,13 @@ public class ClubController {
     @GetMapping("/detailed")
     public ResponseEntity<List<ClubDetails>> getClubsDetailsPageable(
             @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "25") Integer pageSize
+            @RequestParam(defaultValue = "25") Integer pageSize,
+            @RequestParam(name = "search", defaultValue = "") String searchKeyWord
     ) {
 
         if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<ClubDetails> resultPage = clubDetailsService.getClubsDetailsPage(pageNumber, pageSize);
+        Page<ClubDetails> resultPage = clubDetailsService.getClubDetailsPageFilterd(searchKeyWord,pageNumber, pageSize);
         if (pageNumber > resultPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
@@ -328,13 +329,19 @@ public class ClubController {
             @ApiResponse(responseCode = "404", description = "invalid page number or size"),
     })
     @GetMapping("/managed")
-    public ResponseEntity<Page<Club>> getManagedClubs(
+    public ResponseEntity<List<Club>> getManagedClubs(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize
     ) {
         if (pageNumber < 0 || pageSize < 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        return ResponseEntity.ok(clubService.getMyClubs(pageNumber, pageSize));
+        Page<Club> resultPage = clubService.getMyClubs(pageNumber, pageSize);
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     public record NewClubRequest(
