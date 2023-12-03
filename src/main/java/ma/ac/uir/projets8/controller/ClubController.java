@@ -73,7 +73,7 @@ public class ClubController {
     })
     @GetMapping("{club_id}/details")
     public ResponseEntity<ClubDetails> getClubDetailsById(@PathVariable("club_id") Integer id) {
-        return clubDetailsService.getClubDetailsById(id);
+        return ResponseEntity.ok(clubDetailsService.getClubDetailsById(id));
     }
 
 
@@ -149,8 +149,8 @@ public class ClubController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
     @PutMapping("{club_id}/details")
-    public ResponseEntity<String> updateClubDetails(@PathVariable("club_id") Integer id, @RequestBody NewClubDetailsRequest request) {
-        return clubDetailsService.updateClub(id, request);
+    public ResponseEntity<ClubDetails> updateClubDetails(@PathVariable("club_id") Integer id, @RequestBody NewClubDetailsRequest request) {
+        return ResponseEntity.ok(clubDetailsService.updateClub(id, request));
     }
 
     @Operation(summary = "delete a club with id", description = "delete the club with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
