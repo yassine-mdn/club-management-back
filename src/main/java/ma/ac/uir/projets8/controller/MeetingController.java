@@ -8,14 +8,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Account;
 import ma.ac.uir.projets8.model.Meeting;
 import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.repository.MeetingRepository;
 import ma.ac.uir.projets8.service.MeetingService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
@@ -61,7 +66,7 @@ public class MeetingController {
     @GetMapping("{meeting_id}")
     public ResponseEntity<Meeting> getMeetingById(@PathVariable("meeting_id") Integer id){
         
-        return meetingService.getMeetingById(id);
+        return ResponseEntity.ok(meetingService.getMeetingById(id));
     }
 
     @Operation(summary = "get the Organizer of the meeting", description = "returns the organizer account per the meeting id", deprecated = true)
@@ -93,7 +98,19 @@ public class MeetingController {
             @RequestParam(defaultValue = "25") Integer pageSize
     ){
 
-        return meetingService.getMyMeetings(pageNumber,pageSize);
+        if (pageNumber < 0 || pageSize < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+
+        Page<Meeting> resultPage = meetingService.getMyMeetings(pageNumber,pageSize);
+
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     @Operation(summary = "get the participants of the meeting", description = "returns the participants account list per the meeting id",deprecated = true)
@@ -126,9 +143,10 @@ public class MeetingController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @DeleteMapping("{meeting_id}")
-    public ResponseEntity<String> deleteMeeting(@PathVariable("meeting_id") Integer id){
+    public ResponseEntity<Void> deleteMeeting(@PathVariable("meeting_id") Integer id){
         
-        return meetingService.deleteMeeting(id);
+        meetingService.deleteMeeting(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 
