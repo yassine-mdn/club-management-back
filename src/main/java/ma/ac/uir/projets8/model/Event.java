@@ -51,7 +51,7 @@ public class Event {
             joinColumns = @JoinColumn(name = "id_event"),
             inverseJoinColumns = @JoinColumn(name = "id_participant")
     )
-    private Set<Account> participants;
+    private Set<Student> participants;
 
     private String cover;
 
