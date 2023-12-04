@@ -78,12 +78,9 @@ public class EventService {
         eventRepository.deleteById(id);
     }
 
-    public ResponseEntity<List<Transaction>> getTransactionsByEvent(Long id) {
-        try {
-            return ResponseEntity.ok(new ArrayList<>(eventRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getTranscations()));
-        } catch (MeetingNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+    public Page<Transaction> getTransactionsByEvent(Long id, Integer pageNumber, Integer pageSize) {
+
+        return eventRepository.findAllTransactionsByEventId(id, PageRequest.of(pageNumber,pageSize, Sort.by(Sort.Direction.DESC, "date")));
     }
 
 
@@ -115,9 +112,9 @@ public class EventService {
             Integer pageNumber,
             Integer pageSize,
             List<EventStatus> statusList
-    ){
+    ) {
 
-        Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by("date").descending());
-        return eventRepository.findAllByFilter(statusList,searchKeyword,pageable);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("date").descending());
+        return eventRepository.findAllByFilter(statusList, searchKeyword, pageable);
     }
 }

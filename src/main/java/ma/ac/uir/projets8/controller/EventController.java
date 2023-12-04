@@ -90,8 +90,25 @@ public class EventController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER')")
     @GetMapping("{event_id}/transactions")
-    public ResponseEntity<List<Transaction>> getTransactionsByBudget(@PathVariable("event_id") Long id) {
-        return eventService.getTransactionsByEvent(id);
+    public ResponseEntity<List<Transaction>> getTransactionsByBudget(
+            @PathVariable("event_id") Long id,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request: negative page number or size");
+        }
+
+        Page<Transaction> resultPage = eventService.getTransactionsByEvent(id, pageNumber, pageSize);
+
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     @Operation(summary = "get the list of participants",
@@ -109,13 +126,13 @@ public class EventController {
 
 
     @Operation(summary = "Get filtered page of events ",
-        description = "Get events Page filtered by eventStatus or keyword search matching title or description"
+            description = "Get events Page filtered by eventStatus or keyword search matching title or description"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201",description = "successfully retrieved",
+            @ApiResponse(responseCode = "201", description = "successfully retrieved",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
             ),
-            @ApiResponse(responseCode = "404",description = "Bad request",
+            @ApiResponse(responseCode = "404", description = "Bad request",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
             )
     })
@@ -123,21 +140,21 @@ public class EventController {
     ResponseEntity<List<Event>> eventsByFilter(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize,
-            @RequestParam(name = "search",defaultValue = "") String searchKeyword,
-            @RequestParam(name="status",defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
-    ){
-        if (pageNumber<0 || pageSize<0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"invalid request: negative page number or size");
+            @RequestParam(name = "search", defaultValue = "") String searchKeyword,
+            @RequestParam(name = "status", defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
+    ) {
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request: negative page number or size");
         }
 
         Page<Event> eventPage = eventService.getEventsPageFiltered(searchKeyword, pageNumber, pageSize, statusList);
 
-        if(pageNumber>eventPage.getTotalPages()) {
+        if (pageNumber > eventPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages",String.valueOf(eventPage.getTotalPages()));
+        responseHeaders.set("total-pages", String.valueOf(eventPage.getTotalPages()));
 
         return new ResponseEntity<>(eventPage.getContent(), responseHeaders, HttpStatus.OK);
     }
