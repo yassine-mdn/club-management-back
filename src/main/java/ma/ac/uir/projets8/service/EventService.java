@@ -1,5 +1,6 @@
 package ma.ac.uir.projets8.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.EventController;
 import ma.ac.uir.projets8.exception.*;
@@ -7,7 +8,6 @@ import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -16,15 +16,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static ma.ac.uir.projets8.util.FileGenerator.generateStudentFile;
 
 @Service
 @RequiredArgsConstructor
@@ -81,7 +80,20 @@ public class EventService {
     }
 
 
-    //TODO : make it return an exel file with all the participants instead of a list
+    public void getEventParticipantsFile(Long id, HttpServletResponse response) {
+
+        try {
+            List<Student> members = new ArrayList<>(eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id)).getParticipants());
+            String fileName = "rapport-participants" + new SimpleDateFormat("dd-MM-yyyy").format(new Date()) + ".xlsx";
+            generateStudentFile(response, members, fileName);
+
+        } catch (ClubNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
+
+
     public Page<Student> getParticipantsByEvent(Long id, Integer pageNumber, Integer pageSize) {
        return eventRepository.findAllParticipantsByEventId(id, PageRequest.of(pageNumber,pageSize));
     }

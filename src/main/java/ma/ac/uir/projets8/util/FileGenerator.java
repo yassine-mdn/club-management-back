@@ -25,10 +25,9 @@ public class FileGenerator {
 
             Workbook wb = new Workbook(os, "MyApplication", "1.0");
             Worksheet ws = wb.newWorksheet("sheet 1");
-            ws.range(0, 0, members.size(), 3).createTable()
-                    .setName("test")
-                    .setDisplayName("display name")
-                    .styleInfo();
+            ws.range(0, 0, members.size(), 5).createTable()
+                    .setName(fileName)
+                    .setDisplayName(fileName);
             ws.value(0, 0, "Student id");
             ws.value(0, 1, "first name");
             ws.value(0, 2, "last name");

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletResponse;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.EventStatus;
@@ -138,6 +139,14 @@ public class EventController {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
+    @Operation(summary = "get all members of a club bundled in and excel file", description = "get club members in an excel file")
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
+    @GetMapping("/{event_id}/participants/file")
+    public ResponseEntity<Void> getParticipantsFile(@PathVariable("event_id") Long id, HttpServletResponse response){
+        eventService.getEventParticipantsFile(id, response);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
     @Operation(summary = "Get filtered page of events ",
             description = "Get events Page filtered by eventStatus or keyword search matching title or description"
@@ -150,7 +159,7 @@ public class EventController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
             )
     })
-    @GetMapping("")
+    @GetMapping()
     ResponseEntity<List<Event>> eventsByFilter(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize,
