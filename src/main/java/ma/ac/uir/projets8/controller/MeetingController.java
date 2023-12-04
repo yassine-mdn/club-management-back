@@ -37,9 +37,9 @@ public class MeetingController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','PROF')")
     @PostMapping
-    public ResponseEntity<String> addMeeting(@RequestBody NewMeetingRequest request) {
+    public ResponseEntity<Meeting> addMeeting(@RequestBody NewMeetingRequest request) {
         
-        return meetingService.addMeeting(request);
+        return ResponseEntity.ok(meetingService.addMeeting(request));
     }
 
     @Operation(summary = "get All Meetings", description = "returns all the meetings ", deprecated = true)
@@ -155,8 +155,6 @@ public class MeetingController {
             Date date,
             String description,
             Integer lengthInMinutes,
-            Integer organiserId,
-
             String location,
             List<Integer> participantsIds
     ) {

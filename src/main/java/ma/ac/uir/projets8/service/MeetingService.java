@@ -44,7 +44,9 @@ public class MeetingService {
         return ResponseEntity.ok(meetingRepository.findAll());
     }
 
-    public ResponseEntity<String> addMeeting(@RequestBody MeetingController.NewMeetingRequest request) {
+    public Meeting addMeeting(@RequestBody MeetingController.NewMeetingRequest request) {
+
+        Account me = authenticatedDetailsService.getAuthenticatedAccount();
 
         if (NullChecker.hasNull(request))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
@@ -54,7 +56,7 @@ public class MeetingService {
         meeting.setDescription(request.description());
         meeting.setLengthInMinutes(request.lengthInMinutes());
         meeting.setLocation(request.location());
-        meeting.setOrganiser(accountRepository.findById(request.organiserId()).orElseThrow(() -> new AccountNotFoundException(request.organiserId())));
+        meeting.setOrganiser(me);
         meeting.setParticipants(new HashSet<>(studentRepository.findAllById(request.participantsIds())));
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -68,8 +70,7 @@ public class MeetingService {
             }
 
         }
-        meetingRepository.save(meeting);
-        return new ResponseEntity<>("Meeting successfully created", HttpStatus.CREATED);
+        return meetingRepository.save(meeting);
     }
 
 
@@ -97,9 +98,6 @@ public class MeetingService {
                                 meeting.setLengthInMinutes(request.lengthInMinutes());
                             if (!request.location().isEmpty())
                                 meeting.setLocation(request.location());
-                            if (request.organiserId() != null)
-                                meeting.setOrganiser(accountRepository.findById(request.organiserId())
-                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage())));
                             if (!request.participantsIds().isEmpty())
                                 meeting.setParticipants(new HashSet<>(studentRepository.findAllById(request.participantsIds())));
                             return meetingRepository.save(meeting);
