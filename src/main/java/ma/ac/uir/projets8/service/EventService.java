@@ -110,27 +110,14 @@ public class EventService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Event>> getEventsPageFiltered(
+    public Page<Event> getEventsPageFiltered(
             String searchKeyword,
             Integer pageNumber,
             Integer pageSize,
             List<EventStatus> statusList
     ){
-        if (pageNumber<0 || pageSize<0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"invalid request: negative page number or size");
-        }
 
         Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by("date").descending());
-        Page<Event> eventPage = eventRepository.findAllByFilter(statusList,searchKeyword,pageable);
-
-        if(pageNumber>eventPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages",String.valueOf(eventPage.getTotalPages()));
-
-        return new ResponseEntity<>(eventPage.getContent(), responseHeaders, HttpStatus.OK);
-
+        return eventRepository.findAllByFilter(statusList,searchKeyword,pageable);
     }
 }

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Account;
 import ma.ac.uir.projets8.model.ClubDetails;
 import ma.ac.uir.projets8.model.Event;
@@ -15,10 +16,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
@@ -104,15 +107,6 @@ public class EventController {
         return eventService.getParticipantsByEvent(id);
     }
 
-    @GetMapping()
-    public ResponseEntity<List<Event>> getEventsPageable(
-            @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "25") Integer size
-    ) {
-
-        return eventService.getEventsPage(pageNumber, size);
-
-    }
 
     @Operation(summary = "Get filtered page of events ",
         description = "Get events Page filtered by eventStatus or keyword search matching title or description"
@@ -125,14 +119,27 @@ public class EventController {
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
             )
     })
-    @GetMapping("/filtered")
+    @GetMapping("")
     ResponseEntity<List<Event>> eventsByFilter(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize,
             @RequestParam(name = "search",defaultValue = "") String searchKeyword,
             @RequestParam(name="status",defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
     ){
-        return eventService.getEventsPageFiltered(searchKeyword,pageNumber,pageSize,statusList);
+        if (pageNumber<0 || pageSize<0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"invalid request: negative page number or size");
+        }
+
+        Page<Event> eventPage = eventService.getEventsPageFiltered(searchKeyword, pageNumber, pageSize, statusList);
+
+        if(pageNumber>eventPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages",String.valueOf(eventPage.getTotalPages()));
+
+        return new ResponseEntity<>(eventPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     public record NewEventRequest(
