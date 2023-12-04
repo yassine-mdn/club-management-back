@@ -44,7 +44,9 @@ public class MeetingService {
         return ResponseEntity.ok(meetingRepository.findAll());
     }
 
-    public ResponseEntity<String> addMeeting(@RequestBody MeetingController.NewMeetingRequest request) {
+    public Meeting addMeeting(@RequestBody MeetingController.NewMeetingRequest request) {
+
+        Account me = authenticatedDetailsService.getAuthenticatedAccount();
 
         if (NullChecker.hasNull(request))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
@@ -54,7 +56,7 @@ public class MeetingService {
         meeting.setDescription(request.description());
         meeting.setLengthInMinutes(request.lengthInMinutes());
         meeting.setLocation(request.location());
-        meeting.setOrganiser(accountRepository.findById(request.organiserId()).orElseThrow(() -> new AccountNotFoundException(request.organiserId())));
+        meeting.setOrganiser(me);
         meeting.setParticipants(new HashSet<>(studentRepository.findAllById(request.participantsIds())));
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -68,18 +70,13 @@ public class MeetingService {
             }
 
         }
-        meetingRepository.save(meeting);
-        return new ResponseEntity<>("Meeting successfully created", HttpStatus.CREATED);
+        return meetingRepository.save(meeting);
     }
 
 
-    public ResponseEntity<Meeting> getMeetingById(Integer id) {
+    public Meeting getMeetingById(Integer id) {
 
-        try {
-            return ResponseEntity.ok(meetingRepository.findById(id).orElseThrow(() -> new MeetingNotFoundException(id)));
-        } catch (MeetingNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+            return meetingRepository.findById(id).orElseThrow(() -> new MeetingNotFoundException(id));
     }
 
 
@@ -97,9 +94,6 @@ public class MeetingService {
                                 meeting.setLengthInMinutes(request.lengthInMinutes());
                             if (!request.location().isEmpty())
                                 meeting.setLocation(request.location());
-                            if (request.organiserId() != null)
-                                meeting.setOrganiser(accountRepository.findById(request.organiserId())
-                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new AccountNotFoundException(id).getMessage())));
                             if (!request.participantsIds().isEmpty())
                                 meeting.setParticipants(new HashSet<>(studentRepository.findAllById(request.participantsIds())));
                             return meetingRepository.save(meeting);
@@ -139,26 +133,23 @@ public class MeetingService {
     }
 
 
-    public ResponseEntity<String> deleteMeeting(Integer id) {
+    public void deleteMeeting(Integer id) {
 
-        try {
-            Meeting meeting = meetingRepository.findById(id).orElseThrow(() -> new MeetingNotFoundException(id));
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-            for (Student participant : meeting.getParticipants()) {
-                Mail mail = generateEmail(meeting, participant, "meeting-cancelled",
-                        "Annulation de Réunion - " + df.format(meeting.getDate()));
-                try {
-                    emailService.sendHtmlEmail(mail);
-                } catch (Exception e) {
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "email not sent");
-                }
 
+        Meeting meeting = meetingRepository.findById(id).orElseThrow(() -> new MeetingNotFoundException(id));
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        for (Student participant : meeting.getParticipants()) {
+            Mail mail = generateEmail(meeting, participant, "meeting-cancelled",
+                    "Annulation de Réunion - " + df.format(meeting.getDate()));
+            try {
+                emailService.sendHtmlEmail(mail);
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "email not sent");
             }
-            meetingRepository.deleteById(id);
-            return ResponseEntity.ok("deleted successfully");
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, new MeetingNotFoundException(id).getMessage());
+
         }
+        meetingRepository.deleteById(id);
+
 
     }
 
@@ -190,16 +181,11 @@ public class MeetingService {
     }
 
 
-    public ResponseEntity<List<Meeting>> getMyMeetings(int pageNumber, int pageSize) {
+    public Page<Meeting> getMyMeetings(int pageNumber, int pageSize) {
         Account me = authenticatedDetailsService.getAuthenticatedAccount();
 
-        Page<Meeting> resultPage = meetingRepository.findAllByOrganisedOrParticipated(me.getIdA(),
+        return meetingRepository.findAllByOrganisedOrParticipated(me.getIdA(),
                 PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "date")));
-        if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
-        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+
     }
 }
