@@ -5,10 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
-import ma.ac.uir.projets8.model.Account;
-import ma.ac.uir.projets8.model.ClubDetails;
-import ma.ac.uir.projets8.model.Event;
-import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -120,8 +117,25 @@ public class EventController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
     @GetMapping("{event_id}/participants")
-    public ResponseEntity<List<Account>> getParticipantsByEvent(@PathVariable("event_id") Long id) {
-        return eventService.getParticipantsByEvent(id);
+    public ResponseEntity<List<Student>> getParticipantsByEvent(
+            @PathVariable("event_id") Long id,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request: negative page number or size");
+        }
+
+        Page<Student> resultPage = eventService.getParticipantsByEvent(id,pageNumber,pageSize);
+
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
 

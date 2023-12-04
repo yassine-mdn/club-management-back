@@ -3,10 +3,7 @@ package ma.ac.uir.projets8.service;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.EventController;
 import ma.ac.uir.projets8.exception.*;
-import ma.ac.uir.projets8.model.Account;
-import ma.ac.uir.projets8.model.Club;
-import ma.ac.uir.projets8.model.Event;
-import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
@@ -85,12 +82,8 @@ public class EventService {
 
 
     //TODO : make it return an exel file with all the participants instead of a list
-    public ResponseEntity<List<Account>> getParticipantsByEvent(Long id) {
-        try {
-            return ResponseEntity.ok(new ArrayList<>(eventRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getParticipants()));
-        } catch (MeetingNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+    public Page<Student> getParticipantsByEvent(Long id, Integer pageNumber, Integer pageSize) {
+       return eventRepository.findAllParticipantsByEventId(id, PageRequest.of(pageNumber,pageSize));
     }
 
     @Cacheable(value = "events")

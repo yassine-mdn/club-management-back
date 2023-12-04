@@ -1,6 +1,7 @@
 package ma.ac.uir.projets8.repository;
 
 import ma.ac.uir.projets8.model.Club;
+import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.model.enums.EventStatus;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
         select e.transcations from Event e where e.idEvent = :idEvent
             """)
     Page<Transaction> findAllTransactionsByEventId(@Param("idEvent") Long idE, Pageable pageable);
+
+
+    @Query("""
+        select e.participants from Event e where e.idEvent = :idEvent
+            """)
+    Page<Student> findAllParticipantsByEventId(@Param("idEvent") Long idE, Pageable pageable);
+
 
 
 }
