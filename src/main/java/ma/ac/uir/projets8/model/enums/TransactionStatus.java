@@ -1,7 +1,8 @@
 package ma.ac.uir.projets8.model.enums;
 
 public enum TransactionStatus {
-    PENDING,
+    REJECTED,
     APPROVED,
-    REJECTED
+    PENDING
+
 }
