@@ -3,6 +3,7 @@ package ma.ac.uir.projets8.model;
 import jakarta.persistence.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ma.ac.uir.projets8.model.enums.TransactionStatus;
 
 import java.util.Date;
 import java.util.Set;
@@ -42,7 +43,7 @@ public class Transaction {
     @ManyToOne
     private Budget budget;
 
-    private Boolean isValide;
+    private TransactionStatus status;
 
 
 
