@@ -6,6 +6,7 @@ import ma.ac.uir.projets8.exception.BudgetNotFoundException;
 import ma.ac.uir.projets8.exception.TransactionNotFoundException;
 import ma.ac.uir.projets8.model.Budget;
 import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.enums.TransactionStatus;
 import ma.ac.uir.projets8.repository.BudgetRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
 import ma.ac.uir.projets8.repository.TransactionRepository;
@@ -25,12 +26,15 @@ public class TransactionService {
 
 
     public Transaction createTransaction(TransactionController.NewTransactionRequest request){
+
         Transaction transaction = new Transaction();
+
         transaction.setDate(request.date());
         transaction.setValeur(request.valeur());
+        transaction.setStatus(TransactionStatus.PENDING);
         transaction.setEvent(eventRepository.findById(request.idEvent()).orElseThrow(() -> new TransactionNotFoundException(request.idEvent())));
         Budget budget = budgetRepository.findById(request.idBudget()).orElseThrow(()->new BudgetNotFoundException(request.idBudget()));
-        budget.setUsed_budget(budget.getUsed_budget()+request.valeur());
+
         transaction.setBudget(budget);
         return transactionRepository.save(transaction);
     }

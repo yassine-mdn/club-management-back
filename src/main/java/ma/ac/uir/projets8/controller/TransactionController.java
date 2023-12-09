@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.enums.TransactionStatus;
 import ma.ac.uir.projets8.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +24,9 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @Operation(summary = "Create a new transaction")
+    @Operation(summary = "Request a new transaction", description = "Request a new transaction with a pending status")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Transaction successfully created"),
+            @ApiResponse(responseCode = "201", description = "Transaction successfully requested"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @PostMapping
