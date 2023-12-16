@@ -122,4 +122,17 @@ public class TransactionService {
         transaction.setStatus(TransactionStatus.REJECTED);
         transactionRepository.save(transaction);
     }
+
+    public Page<Transaction> getAllTransactionByStatus(TransactionStatus status, Integer pageNumber, Integer pageSize) {
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalide pageSize or pageNumber in getAllTransactions");
+        }
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("date").descending());
+        Page<Transaction> transactionPage = transactionRepository.findAllByStatus(status, pageable);
+
+        if (transactionPage.getTotalPages() < pageNumber) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        return transactionPage;
+    }
 }

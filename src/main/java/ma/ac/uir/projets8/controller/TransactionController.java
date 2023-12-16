@@ -115,6 +115,25 @@ public class TransactionController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Get Page of transactions by status")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved",
+                    headers={@Header(name="total-pages", description = "the total number of pages", schema = @Schema(type = "string"))})
+    })
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Transaction>> getAllTransactionsByStatus(
+            @PathVariable TransactionStatus status,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+
+        Page<Transaction> transactionPage = transactionService.getAllTransactionByStatus(status, pageNumber, pageSize);
+        HttpHeaders responseHeader = new HttpHeaders();
+        responseHeader.set("total-pages",String.valueOf(transactionPage.getTotalPages()));
+
+        return new ResponseEntity<>(transactionPage.getContent(),responseHeader,HttpStatus.OK);
+    }
+
     public record NewTransactionRequest(
         Date date,
         double valeur,
