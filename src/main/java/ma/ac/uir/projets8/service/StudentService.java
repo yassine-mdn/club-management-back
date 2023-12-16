@@ -5,9 +5,7 @@ import ma.ac.uir.projets8.controller.StudentController;
 import ma.ac.uir.projets8.exception.AccountNotFoundException;
 import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Student;
-import ma.ac.uir.projets8.model.enums.Role;
 import ma.ac.uir.projets8.repository.StudentRepository;
-import ma.ac.uir.projets8.util.NullChecker;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -101,5 +99,14 @@ public class StudentService {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    }
+
+
+    public Page<Student> getStudentsFiltered(
+            String searchKeyWord,
+            Integer pageNumber,
+            Integer pageSize
+    ){
+        return studentRepository.findAllFiltered(searchKeyWord, PageRequest.of(pageNumber,pageSize));
     }
 }
