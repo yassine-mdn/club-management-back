@@ -38,7 +38,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    // TODO: remove "/**" from authorizeHttpRequests()
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -49,7 +48,7 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/**","/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**")
+                .requestMatchers("/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

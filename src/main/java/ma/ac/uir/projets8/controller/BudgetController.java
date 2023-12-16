@@ -16,6 +16,7 @@ import ma.ac.uir.projets8.service.BudgetService;
 import ma.ac.uir.projets8.service.DocumentService;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,12 +81,15 @@ public class BudgetController {
             @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
     })
     @GetMapping("{budget_id}/transactions")
-    public ResponseEntity<Page<Transaction>> getTransactionsByBudget(
+    public ResponseEntity<List<Transaction>> getTransactionsByBudget(
             @PathVariable("budget_id") Long id,
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize
         ){
-        return budgetService.getTransactionsByBudget(id,pageNumber,pageSize);
+        Page<Transaction> transactionPage =budgetService.getTransactionsByBudget(id,pageNumber,pageSize);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(transactionPage.getTotalPages()));
+        return new ResponseEntity<>(transactionPage.getContent(),responseHeaders,HttpStatus.OK);
     }
 
     public record NewBudgetRequest(

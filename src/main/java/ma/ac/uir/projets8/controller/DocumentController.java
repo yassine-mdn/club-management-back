@@ -68,7 +68,7 @@ public class DocumentController {
     @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER','SECRETARY')")
     @PostMapping("/send/src/{club_id}")
     public ResponseEntity<?> sendDocument(@PathVariable("club_id") Integer club_id, @RequestParam("file") MultipartFile file) throws IOException {
-        Club sender = clubService.getClubById(club_id).getBody();
+        Club sender = clubService.getClubById(club_id);
         return ResponseEntity.ok(documentService.uploadFichier(file, sender));
     }
 

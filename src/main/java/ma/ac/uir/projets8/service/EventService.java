@@ -1,16 +1,13 @@
 package ma.ac.uir.projets8.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.controller.EventController;
 import ma.ac.uir.projets8.exception.*;
-import ma.ac.uir.projets8.model.Account;
-import ma.ac.uir.projets8.model.Club;
-import ma.ac.uir.projets8.model.Event;
-import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.repository.ClubRepository;
 import ma.ac.uir.projets8.repository.EventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -19,15 +16,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static ma.ac.uir.projets8.util.FileGenerator.generateStudentFile;
 
 @Service
 @RequiredArgsConstructor
@@ -78,22 +74,28 @@ public class EventService {
         eventRepository.deleteById(id);
     }
 
-    public ResponseEntity<List<Transaction>> getTransactionsByEvent(Long id) {
+    public Page<Transaction> getTransactionsByEvent(Long id, Integer pageNumber, Integer pageSize) {
+
+        return eventRepository.findAllTransactionsByEventId(id, PageRequest.of(pageNumber,pageSize, Sort.by(Sort.Direction.DESC, "date")));
+    }
+
+
+    public void getEventParticipantsFile(Long id, HttpServletResponse response) {
+
         try {
-            return ResponseEntity.ok(new ArrayList<>(eventRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getTranscations()));
-        } catch (MeetingNotFoundException e) {
+            List<Student> members = new ArrayList<>(eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id)).getParticipants());
+            String fileName = "rapport-participants" + new SimpleDateFormat("dd-MM-yyyy").format(new Date()) + ".xlsx";
+            generateStudentFile(response, members, fileName);
+
+        } catch (ClubNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
 
-    //TODO : make it return an exel file with all the participants instead of a list
-    public ResponseEntity<List<Account>> getParticipantsByEvent(Long id) {
-        try {
-            return ResponseEntity.ok(new ArrayList<>(eventRepository.findById(id).orElseThrow(() -> new BudgetNotFoundException(id)).getParticipants()));
-        } catch (MeetingNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+
+    public Page<Student> getParticipantsByEvent(Long id, Integer pageNumber, Integer pageSize) {
+       return eventRepository.findAllParticipantsByEventId(id, PageRequest.of(pageNumber,pageSize));
     }
 
     @Cacheable(value = "events")
@@ -110,27 +112,14 @@ public class EventService {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Event>> getEventsPageFiltered(
+    public Page<Event> getEventsPageFiltered(
             String searchKeyword,
             Integer pageNumber,
             Integer pageSize,
             List<EventStatus> statusList
-    ){
-        if (pageNumber<0 || pageSize<0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"invalid request: negative page number or size");
-        }
+    ) {
 
-        Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by("date").descending());
-        Page<Event> eventPage = eventRepository.findAllByFilter(statusList,searchKeyword,pageable);
-
-        if(pageNumber>eventPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages",String.valueOf(eventPage.getTotalPages()));
-
-        return new ResponseEntity<>(eventPage.getContent(), responseHeaders, HttpStatus.OK);
-
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("date").descending());
+        return eventRepository.findAllByFilter(statusList, searchKeyword, pageable);
     }
 }

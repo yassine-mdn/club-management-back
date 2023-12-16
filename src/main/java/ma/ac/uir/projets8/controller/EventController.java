@@ -4,10 +4,9 @@ import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import ma.ac.uir.projets8.model.Account;
-import ma.ac.uir.projets8.model.ClubDetails;
-import ma.ac.uir.projets8.model.Event;
-import ma.ac.uir.projets8.model.Transaction;
+import jakarta.servlet.http.HttpServletResponse;
+import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
+import ma.ac.uir.projets8.model.*;
 import ma.ac.uir.projets8.model.enums.EventStatus;
 import ma.ac.uir.projets8.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,10 +14,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
@@ -87,8 +88,25 @@ public class EventController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','TREASURER')")
     @GetMapping("{event_id}/transactions")
-    public ResponseEntity<List<Transaction>> getTransactionsByBudget(@PathVariable("event_id") Long id) {
-        return eventService.getTransactionsByEvent(id);
+    public ResponseEntity<List<Transaction>> getTransactionsByBudget(
+            @PathVariable("event_id") Long id,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request: negative page number or size");
+        }
+
+        Page<Transaction> resultPage = eventService.getTransactionsByEvent(id, pageNumber, pageSize);
+
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     @Operation(summary = "get the list of participants",
@@ -100,39 +118,68 @@ public class EventController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT')")
     @GetMapping("{event_id}/participants")
-    public ResponseEntity<List<Account>> getParticipantsByEvent(@PathVariable("event_id") Long id) {
-        return eventService.getParticipantsByEvent(id);
-    }
-
-    @GetMapping()
-    public ResponseEntity<List<Event>> getEventsPageable(
+    public ResponseEntity<List<Student>> getParticipantsByEvent(
+            @PathVariable("event_id") Long id,
             @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "25") Integer size
+            @RequestParam(defaultValue = "25") Integer pageSize
     ) {
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request: negative page number or size");
+        }
 
-        return eventService.getEventsPage(pageNumber, size);
+        Page<Student> resultPage = eventService.getParticipantsByEvent(id,pageNumber,pageSize);
 
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
+
+    @Operation(summary = "get all members of a club bundled in and excel file", description = "get club members in an excel file")
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
+    @GetMapping("/{event_id}/participants/file")
+    public ResponseEntity<Void> getParticipantsFile(@PathVariable("event_id") Long id, HttpServletResponse response){
+        eventService.getEventParticipantsFile(id, response);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
     @Operation(summary = "Get filtered page of events ",
-        description = "Get events Page filtered by eventStatus or keyword search matching title or description"
+            description = "Get events Page filtered by eventStatus or keyword search matching title or description"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201",description = "successfully retrieved",
+            @ApiResponse(responseCode = "201", description = "successfully retrieved",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
             ),
-            @ApiResponse(responseCode = "404",description = "Bad request",
+            @ApiResponse(responseCode = "404", description = "Bad request",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))}
             )
     })
-    @GetMapping("/filtered")
+    @GetMapping()
     ResponseEntity<List<Event>> eventsByFilter(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "25") Integer pageSize,
-            @RequestParam(name = "search",defaultValue = "") String searchKeyword,
-            @RequestParam(name="status",defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
-    ){
-        return eventService.getEventsPageFiltered(searchKeyword,pageNumber,pageSize,statusList);
+            @RequestParam(name = "search", defaultValue = "") String searchKeyword,
+            @RequestParam(name = "status", defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
+    ) {
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request: negative page number or size");
+        }
+
+        Page<Event> eventPage = eventService.getEventsPageFiltered(searchKeyword, pageNumber, pageSize, statusList);
+
+        if (pageNumber > eventPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(eventPage.getTotalPages()));
+
+        return new ResponseEntity<>(eventPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
     public record NewEventRequest(

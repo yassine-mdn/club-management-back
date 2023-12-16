@@ -26,18 +26,14 @@ public class ClubDetailsService {
 
     private final ClubDetailsRepository clubDetailsRepository;
 
-    public ResponseEntity<ClubDetails> getClubDetailsById(Integer id) {
+    public ClubDetails getClubDetailsById(Integer id) {
 
-        try {
-            return ResponseEntity.ok(clubDetailsRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id)));
-        } catch (ClubNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        return clubDetailsRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
     }
 
-    @CacheEvict(value = { "clubsDetails","clubs"}, allEntries = true)
-    public ResponseEntity<String> updateClub(Integer id, NewClubDetailsRequest request) {
-        clubDetailsRepository.findById(id).map(club -> {
+    @CacheEvict(value = {"clubsDetails", "clubs"}, allEntries = true)
+    public ClubDetails updateClub(Integer id, NewClubDetailsRequest request) {
+        return clubDetailsRepository.findById(id).map(club -> {
                     if (request.logo() != null && !request.logo().isEmpty())
                         club.setLogo(request.logo());
                     if (request.cover() != null && !request.cover().isEmpty())
@@ -52,21 +48,11 @@ public class ClubDetailsService {
                         club.setAboutUs(request.aboutUs());
                     return clubDetailsRepository.save(club);
                 }
-        ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, new ClubNotFoundException(id).getMessage()));
-        return new ResponseEntity<>("Club account with " + id + " successfully updated", HttpStatus.ACCEPTED);
+        ).orElseThrow(() -> new ClubNotFoundException(id));
     }
 
     @Cacheable(value = "clubsDetails")
-    public ResponseEntity<List<ClubDetails>> getClubsDetailsPage(Integer pageNumber, Integer size) {
-
-        if (pageNumber < 0 || size < 0)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
-        Page<ClubDetails> resultPage = clubDetailsRepository.findAll(PageRequest.of(pageNumber, size));
-        if (pageNumber > resultPage.getTotalPages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
-        }
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
-        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
+    public Page<ClubDetails> getClubDetailsPageFilterd(String keyword,Integer pageNumber, Integer size) {
+        return clubDetailsRepository.findAllFiltered(keyword,PageRequest.of(pageNumber,size));
     }
 }

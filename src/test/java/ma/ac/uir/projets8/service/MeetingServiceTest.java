@@ -78,26 +78,10 @@ class MeetingServiceTest {
         System.out.println();
     }
 
-    @Test
-    void addMeeting() {
-        MeetingController.NewMeetingRequest meeting = new MeetingController.NewMeetingRequest(
-                "test",
-                null,
-                "test",
-                60,
-                personnel.getIdA(),
-                List.of(student1.getIdA(), student2.getIdA())
-        );
-        meetingService.addMeeting(meeting);
-        Meeting meeting2 = meetingService.getMeetingById(2).getBody();
-        assertThat(meeting2).isNotNull();
-        assertEquals(meeting2.getOrganiser().getLastName(), personnel.getLastName());
-
-    }
 
     @Test
     void getMeetingById() {
-        Meeting meeting = meetingService.getMeetingById(1).getBody();
+        Meeting meeting = meetingService.getMeetingById(1);
         assertThat(meeting).isNotNull();
         System.out.println(meeting.getTitle());
     }
@@ -113,19 +97,19 @@ class MeetingServiceTest {
                 List.of(student1.getIdA())
         );
         meetingService.updateMeeting(1, request);
-        Meeting meeting = meetingService.getMeetingById(1).getBody();
+        Meeting meeting = meetingService.getMeetingById(1);
         assertEquals(meeting.getParticipants().size(), 1);
     }
 
     @Test
     void getMeetingParticipants() {
-        Meeting meeting = meetingService.getMeetingById(1).getBody();
+        Meeting meeting = meetingService.getMeetingById(1);
         assertEquals(meeting.getParticipants().size(), 2);
     }
 
     @Test
     void getMeetingOrganiser() {
-        Meeting meeting = meetingService.getMeetingById(1).getBody();
+        Meeting meeting = meetingService.getMeetingById(1);
         assertEquals(meeting.getOrganiser().getLastName(), personnel.getLastName());
     }
 

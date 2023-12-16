@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class AuthenticationResponse {
 
+    private Integer id;
     private List<Role> roles;
     private String accessToken;
     private String refreshToken;
