@@ -109,4 +109,17 @@ public class TransactionService {
         transaction.setStatus(TransactionStatus.APPROVED);
         transactionRepository.save(transaction);
     }
+
+    public void rejectTransaction(Long id) {
+        Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
+        if (transaction.getStatus().equals(TransactionStatus.REJECTED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "transaction already rejected");
+        }
+        if (transaction.getStatus().equals(TransactionStatus.APPROVED)) {
+            Budget budget = transaction.getBudget();
+            budget.setUsed_budget(budget.getUsed_budget() - transaction.getValeur());
+        }
+        transaction.setStatus(TransactionStatus.REJECTED);
+        transactionRepository.save(transaction);
+    }
 }

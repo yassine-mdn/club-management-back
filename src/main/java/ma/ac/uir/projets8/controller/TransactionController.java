@@ -104,6 +104,17 @@ public class TransactionController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary="reject a transaction by ID")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="204", description="Transaction successfully rejected"),
+            @ApiResponse(responseCode="404", description="Transaction not found")
+    })
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<Void> rejectTransaction(@PathVariable Long id){
+        transactionService.rejectTransaction(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     public record NewTransactionRequest(
         Date date,
         double valeur,
