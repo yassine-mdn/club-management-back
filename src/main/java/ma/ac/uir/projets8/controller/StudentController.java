@@ -8,14 +8,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import ma.ac.uir.projets8.exception.PageOutOfBoundsException;
 import ma.ac.uir.projets8.model.Student;
 import ma.ac.uir.projets8.model.enums.Role;
 import ma.ac.uir.projets8.repository.StudentRepository;
 import ma.ac.uir.projets8.service.StudentService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -77,8 +81,10 @@ public class StudentController {
         return studentService.deleteStudent(id);
     }
 
-    @Operation(summary = "get a page of Students", description = "returns a specific page of student accounts with the specified number of lines", deprecated = true)
-
+    @Operation(
+            summary = "get a page of Students serached by keyword",
+            description = "returns a specific page of student accounts with the specified number of lines"
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully retrieved",
                     headers = {@Header(name = "total-pages", description = "the total number of pages", schema = @Schema(type = "string"))
@@ -90,11 +96,19 @@ public class StudentController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public ResponseEntity<List<Student>> getStudentsPageable(
-            @RequestParam Integer pageNumber,
-            @RequestParam  Integer size
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize,
+            @RequestParam(name = "search", defaultValue = "") String searchKeyWord
     ) {
-
-        return studentService.getStudentsPage(pageNumber, size);
+        if (pageNumber < 0 || pageSize < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
+        Page<Student> resultPage = studentService.getStudentsFiltered(searchKeyWord, pageNumber, pageSize);
+        if (pageNumber > resultPage.getTotalPages()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
+        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("total-pages", String.valueOf(resultPage.getTotalPages()));
+        return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
 
