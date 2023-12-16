@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -73,7 +74,7 @@ public class BudgetService {
         budgetRepository.findAll().forEach(budget -> budget.setUsed_budget(0));
     }
 
-    public ResponseEntity<Page<Transaction>> getTransactionsByBudget(Long id, Integer pageNumber, Integer pageSize){
+    public Page<Transaction> getTransactionsByBudget(Long id, Integer pageNumber, Integer pageSize){
 
         if (pageNumber < 0 || pageSize < 0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid request");
@@ -87,7 +88,8 @@ public class BudgetService {
         if (pageNumber > transactionsPage.getTotalPages()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, new PageOutOfBoundsException(pageNumber).getMessage());
         }
-        return ResponseEntity.ok(transactionsPage);
+
+        return transactionsPage;
 
     }
 }

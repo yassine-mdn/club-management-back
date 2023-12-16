@@ -2,12 +2,17 @@ package ma.ac.uir.projets8.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Transaction;
+import ma.ac.uir.projets8.model.enums.TransactionStatus;
 import ma.ac.uir.projets8.service.TransactionService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +28,9 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @Operation(summary = "Create a new transaction")
+    @Operation(summary = "Request a new transaction", description = "Request a new transaction with a pending status")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Transaction successfully created"),
+            @ApiResponse(responseCode = "201", description = "Transaction successfully requested"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @PostMapping
@@ -33,13 +38,22 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.createTransaction(request));
     }
 
-    @Operation(summary = "Get all transactions")
+    @Operation(summary = "Get Page of transactions")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved",
+                    headers={@Header(name="total-pages", description = "the total number of pages", schema = @Schema(type = "string"))})
     })
     @GetMapping
-    public ResponseEntity<List<Transaction>> getAllTransactions() {
-        return ResponseEntity.ok(transactionService.getAllTransaction());
+    public ResponseEntity<List<Transaction>> getAllTransactions(
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+
+        Page<Transaction> transactionPage = transactionService.getAllTransaction(pageNumber, pageSize);
+        HttpHeaders responseHeader = new HttpHeaders();
+        responseHeader.set("total-pages",String.valueOf(transactionPage.getTotalPages()));
+
+        return new ResponseEntity<>(transactionPage.getContent(),responseHeader,HttpStatus.OK);
     }
 
     @Operation(summary = "Get a transaction by ID")
@@ -57,7 +71,7 @@ public class TransactionController {
         }
     }
 
-
+    @Deprecated
     @Operation(summary = "Update a transaction", deprecated = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Transaction successfully updated"),
@@ -79,6 +93,46 @@ public class TransactionController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "approve a transaction by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Transaction successfully approved"),
+            @ApiResponse(responseCode = "404", description = "Transaction not found")
+    })
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<Void> approveTransaction(@PathVariable Long id) {
+        transactionService.approveTransaction(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary="reject a transaction by ID")
+    @ApiResponses(value={
+            @ApiResponse(responseCode="204", description="Transaction successfully rejected"),
+            @ApiResponse(responseCode="404", description="Transaction not found")
+    })
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<Void> rejectTransaction(@PathVariable Long id){
+        transactionService.rejectTransaction(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Get Page of transactions by status")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved",
+                    headers={@Header(name="total-pages", description = "the total number of pages", schema = @Schema(type = "string"))})
+    })
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Transaction>> getAllTransactionsByStatus(
+            @PathVariable TransactionStatus status,
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+
+        Page<Transaction> transactionPage = transactionService.getAllTransactionByStatus(status, pageNumber, pageSize);
+        HttpHeaders responseHeader = new HttpHeaders();
+        responseHeader.set("total-pages",String.valueOf(transactionPage.getTotalPages()));
+
+        return new ResponseEntity<>(transactionPage.getContent(),responseHeader,HttpStatus.OK);
+    }
 
     public record NewTransactionRequest(
         Date date,
