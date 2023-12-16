@@ -93,6 +93,16 @@ public class TransactionController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "approve a transaction by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Transaction successfully approved"),
+            @ApiResponse(responseCode = "404", description = "Transaction not found")
+    })
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<Void> approveTransaction(@PathVariable Long id) {
+        transactionService.approveTransaction(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     public record NewTransactionRequest(
         Date date,

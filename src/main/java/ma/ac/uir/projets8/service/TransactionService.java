@@ -95,4 +95,18 @@ public class TransactionService {
         }
         transactionRepository.deleteById(idTransaction);
     }
+
+    public void approveTransaction(Long id) {
+        Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
+        if (transaction.getStatus().equals(TransactionStatus.APPROVED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "transaction already approved");
+        }
+        Budget budget = transaction.getBudget();
+        if(budget.getUsed_budget()+transaction.getValeur()>budget.getBudget_initial()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "budget exceeded");
+        }
+        budget.setUsed_budget(budget.getUsed_budget() + transaction.getValeur());
+        transaction.setStatus(TransactionStatus.APPROVED);
+        transactionRepository.save(transaction);
+    }
 }
