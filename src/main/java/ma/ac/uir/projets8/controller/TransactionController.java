@@ -2,6 +2,8 @@ package ma.ac.uir.projets8.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.Data;
@@ -9,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import ma.ac.uir.projets8.model.Transaction;
 import ma.ac.uir.projets8.model.enums.TransactionStatus;
 import ma.ac.uir.projets8.service.TransactionService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,13 +38,22 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.createTransaction(request));
     }
 
-    @Operation(summary = "Get all transactions")
+    @Operation(summary = "Get Page of transactions")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved",
+                    headers={@Header(name="total-pages", description = "the total number of pages", schema = @Schema(type = "string"))})
     })
     @GetMapping
-    public ResponseEntity<List<Transaction>> getAllTransactions() {
-        return ResponseEntity.ok(transactionService.getAllTransaction());
+    public ResponseEntity<List<Transaction>> getAllTransactions(
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "25") Integer pageSize
+    ) {
+
+        Page<Transaction> transactionPage = transactionService.getAllTransaction(pageNumber, pageSize);
+        HttpHeaders responseHeader = new HttpHeaders();
+        responseHeader.set("total-pages",String.valueOf(transactionPage.getTotalPages()));
+
+        return new ResponseEntity<>(transactionPage.getContent(),responseHeader,HttpStatus.OK);
     }
 
     @Operation(summary = "Get a transaction by ID")
@@ -58,7 +71,7 @@ public class TransactionController {
         }
     }
 
-
+    @Deprecated
     @Operation(summary = "Update a transaction", deprecated = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Transaction successfully updated"),

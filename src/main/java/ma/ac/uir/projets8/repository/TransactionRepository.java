@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     public Page<Transaction> findAllByBudget_IdBudget(Long budgetId, Pageable pageable);
+//    public Page<Transaction> findAllPageable(Pageable pageable);
 }
