@@ -98,6 +98,9 @@ public class ClubService {
 
     @CacheEvict(value = {"clubs", "clubsDetails"}, allEntries = true)
     public Club updateClub(Integer id, NewClubRequest request) {
+
+        Account account = authenticatedDetailsService.getAuthenticatedAccount();
+
         return clubRepository.findById(id).map(club -> {
                     if (request.name() != null)
                         club.setName(request.name());
@@ -110,23 +113,15 @@ public class ClubService {
                                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid supervisor id request")));
                     if (request.featured() != null)
                         club.setFeatured(request.featured());
+                    if (request.status() != null) {
+                        if (!account.getRoles().contains(Role.ADMIN) && !account.getRoles().contains(Role.PROF))
+                            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not allowed to change this club status");
+                        club.setStatus(request.status());
+                    }
+
                     return clubRepository.save(club);
                 }
         ).orElseThrow(() -> new ClubNotFoundException(id));
-    }
-
-    public Club updateClubStatus(Integer id, ClubStatus status) {
-
-        Account account = authenticatedDetailsService.getAuthenticatedAccount();
-
-        return clubRepository.findById(id).map(club -> {
-                    if (club.getType().equals(ClubType.ACADEMIC) || !Objects.equals(club.getSupervisor().getIdA(), account.getIdA()))
-                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "you are not allowed to change this club status");
-                    club.setStatus(status);
-                    return clubRepository.save(club);
-                }
-        ).orElseThrow(() -> new ClubNotFoundException(id));
-
     }
 
     //TODO: add service for club president to make a president change request (email ytsafet l admin)
