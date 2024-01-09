@@ -39,6 +39,7 @@ public class EventService {
         event.setName(request.name());
         event.setDate(request.date());
         event.setDescription(request.description());
+        event.setCover(request.cover());
         event.setStatus(EventStatus.REQUESTED);
         event.setOrganisateur(clubRepository.findById(request.organizer()).orElseThrow(() -> new ClubNotFoundException(request.organizer())));
         return eventRepository.save(event);
