@@ -186,7 +186,8 @@ public class EventController {
             String name,
             String description,
             Date date,
-            Integer organizer
+            Integer organizer,
+            String cover
     ) {
     }
 }
