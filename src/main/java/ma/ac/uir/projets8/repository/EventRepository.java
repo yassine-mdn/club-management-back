@@ -48,6 +48,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             """)
     Page<Student> findAllParticipantsByEventId(@Param("idEvent") Long idE, Pageable pageable);
 
+    @Query("SELECT COUNT(e) FROM Event e WHERE e.organisateur.idC = :clubID AND e.status IN :statusList")
+    int countEventsByStatusAndClubId(@Param("clubID") Integer clubID, @Param("statusList") List<EventStatus> statusList);
+
 
 
 }
