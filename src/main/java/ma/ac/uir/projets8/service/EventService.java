@@ -123,4 +123,8 @@ public class EventService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("date").descending());
         return eventRepository.findAllByFilter(statusList, searchKeyword, pageable);
     }
+
+    public Integer getEventsCountByStatusAndClubId(Integer clubID, List<EventStatus> statusList) {
+        return eventRepository.countEventsByStatusAndClubId(clubID, statusList);
+    }
 }

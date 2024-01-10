@@ -130,6 +130,17 @@ public class ClubController {
         return new ResponseEntity<>(resultPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
+    @Operation(summary = "count club members by id", description = "returns the number of members of a club per the id", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - the id is invalid", content = @Content(schema = @Schema(implementation = Void.class)))
+    })
+    @PreAuthorize("hasAnyRole('ADMIN','PROF','PRESIDENT','VICE_PRESIDENT','SECRETARY')")
+    @GetMapping("{club_id}/members/count")
+    public ResponseEntity<Integer> countClubMembers(@PathVariable("club_id") Integer id) {
+        return ResponseEntity.ok(clubService.countClubMembers(id));
+    }
+
 
     @Operation(summary = "update a club by id", description = "updates the club with the specified id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {

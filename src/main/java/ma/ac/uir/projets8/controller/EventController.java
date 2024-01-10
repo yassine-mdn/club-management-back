@@ -182,6 +182,14 @@ public class EventController {
         return new ResponseEntity<>(eventPage.getContent(), responseHeaders, HttpStatus.OK);
     }
 
+    @Operation(summary = "Get events count by status and clubId")
+    @GetMapping("/{clubID}/count")
+    public ResponseEntity<Integer> getEventsCountByStatusAndClubId(
+            @PathVariable Integer clubID,
+            @RequestParam(name = "status", defaultValue = "REQUESTED,APPROVED,REJECTED,POST_EVENT,CLOSED") List<EventStatus> statusList
+    ) {
+        return ResponseEntity.ok(eventService.getEventsCountByStatusAndClubId(clubID, statusList));
+    }
     public record NewEventRequest(
             String name,
             String description,

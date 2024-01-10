@@ -305,4 +305,11 @@ public class ClubService {
         Account account = authenticatedDetailsService.getAuthenticatedAccount();
         return clubRepository.findAllManagedClubs(account.getIdA(), PageRequest.of(pageNumber, pageSize));
     }
+
+    public Integer countClubMembers(Integer id) {
+
+
+        Club club = clubRepository.findById(id).orElseThrow(() -> new ClubNotFoundException(id));
+        return studentRepository.countAllByJoinedClubs(club);
+    }
 }

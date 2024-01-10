@@ -21,4 +21,6 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
         or (lower(s.email) like lower(concat('%',:keyword,'%')))
     """)
     Page<Student> findAllFiltered(@Param("keyword") String keyword, Pageable pageable);
+
+    Integer countAllByJoinedClubs(Club c);
 }
